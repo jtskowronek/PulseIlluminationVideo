@@ -13,8 +13,6 @@ import torch.optim
 
 from skimage.measure import compare_psnr
 
-from utils.sr_utils import *
-
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark =True
 dtype = torch.cuda.FloatTensor
