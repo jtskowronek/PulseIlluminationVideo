@@ -27,11 +27,22 @@ parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/', type=str, help='output path')
 parser.add_argument('--name', default='snapshot.tiff', type=str, help='input path')
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
-
-
 args = parser.parse_args()
 
 
+if not os.path.exists(args.output):
+        os.makedirs(args.output)
+
+
+#Define Net
+net = skip(input_depth, img_np.shape[0], 
+               num_channels_down = [128] * 5,
+               num_channels_up =   [128] * 5,
+               num_channels_skip =    [128] * 5,  
+               filter_size_up = 3, filter_size_down = 3, 
+               upsample_mode='nearest', filter_skip_size=1,
+               need_sigmoid=True, need_bias=True, pad=pad, act_fun='LeakyReLU').type(dtype)
+net = net.cuda()
 loss = nn.MSELoss()
 loss.cuda()
 
