@@ -34,7 +34,7 @@ class UNet(nn.Module):
         upsample_mode in ['deconv', 'nearest', 'bilinear']
         pad in ['zero', 'replication', 'none']
     '''
-    def __init__(self, num_input_channels=3, num_output_channels=3, 
+    def __init__(self, num_input_channels=1, num_output_channels=8, 
                        feature_scale=4, more_layers=0, concat_x=False,
                        upsample_mode='deconv', pad='zero', norm_layer=nn.InstanceNorm2d, need_sigmoid=True, need_bias=True):
         super(UNet, self).__init__()
@@ -189,4 +189,4 @@ class unetUp(nn.Module):
 
         output= self.conv(torch.cat([in1_up, inputs2_], 1))
 
-        return output
+        return output      
