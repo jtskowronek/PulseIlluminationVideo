@@ -4,7 +4,7 @@ import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import numpy as np
 from models import *
-from functions import *
+from functions.utils import *
 import torch
 import torch.optim
 import torch.nn as nn
@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description='Setting, compressive rate, size, a
 
 parser.add_argument('--iter', default=2000, type=int, help='max epoch')
 parser.add_argument('--LR', default=0.01, type=float)
-parser.add_argument('--Fr', default=16, type=int, help='compressive rate')
+parser.add_argument('--frames', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
 parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/', type=str, help='output path')
@@ -34,5 +34,12 @@ args = parser.parse_args()
 
 loss = nn.MSELoss()
 loss.cuda()
+
+
+gt,imgt = meas2tensor(args)
+mask = code2tensor(args)
+
+
+
 
 
