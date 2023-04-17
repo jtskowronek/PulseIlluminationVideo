@@ -28,9 +28,13 @@ parser.add_argument('--LR', default=0.01, type=float)
 parser.add_argument('--Fr', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
 parser.add_argument('--Fr', default=16, type=int, help='compressive rate')
+parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
 
 
+args = parser.parse_args()
 
-# To produce images from the paper we took *_GT.png images from LapSRN viewer for corresponding factor,
-# e.g. x4/zebra_GT.png for factor=4, and x8/zebra_GT.png for factor=8 
-path_to_image = 'data/sr/zebra_GT.png'
+
+loss = nn.MSELoss()
+loss.cuda()
+
+
