@@ -6,12 +6,12 @@ import os
 
 import numpy as np
 from models import *
+from functions import *
 
 import torch
 import torch.optim
 
 from skimage.measure import compare_psnr
-from models.downsampler import Downsampler
 
 from utils.sr_utils import *
 
