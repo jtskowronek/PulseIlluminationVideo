@@ -30,9 +30,6 @@ parser.add_argument('--size', default=[256, 340], type=int, help='input image re
 parser.add_argument('--Fr', default=16, type=int, help='compressive rate')
 
 
-imsize = -1 
-factor = 4 # 8
-PLOT = True
 
 # To produce images from the paper we took *_GT.png images from LapSRN viewer for corresponding factor,
 # e.g. x4/zebra_GT.png for factor=4, and x8/zebra_GT.png for factor=8 
