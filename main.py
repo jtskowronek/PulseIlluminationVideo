@@ -27,8 +27,9 @@ parser.add_argument('--iter', default=2000, type=int, help='max epoch')
 parser.add_argument('--LR', default=0.01, type=float)
 parser.add_argument('--Fr', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
-parser.add_argument('--input', default='', type=str, help='input path')
-parser.add_argument('--output', default='', type=str, help='output path')
+parser.add_argument('--input', default='./input/', type=str, help='input path')
+parser.add_argument('--output', default='./output/', type=str, help='output path')
+parser.add_argument('--name', default='snapshot.tiff', type=str, help='input path')
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
 
 
