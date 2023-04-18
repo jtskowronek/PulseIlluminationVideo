@@ -3,9 +3,9 @@ import argparse
 import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import numpy as np
-from models.unet import UNet
-from models.skip import skip
 from functions.utils import *
+from functions.GetNetwork import *
+from functions.adquisition import *
 import torch
 import torch.optim
 import torch.nn as nn
@@ -27,6 +27,7 @@ parser.add_argument('--size', default=[256, 340], type=int, help='input image re
 parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/', type=str, help='output path')
 parser.add_argument('--name', default='snapshot.tiff', type=str, help='input path')
+parser.add_argument('--network', default='3DUNet', type=str, help='input path')
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
 args = parser.parse_args()
 
@@ -36,13 +37,7 @@ if not os.path.exists(args.output):
 
 
 #Define Net
-net = skip(args.frames, args.frames, 
-               num_channels_down = [128] * 5,
-               num_channels_up =   [128] * 5,
-               num_channels_skip =    [128] * 5,  
-               filter_size_up = 3, filter_size_down = 3, 
-               upsample_mode='nearest', filter_skip_size=1,
-               need_sigmoid=True, need_bias=True, act_fun='LeakyReLU').type(dtype)
+net = getnetwork(args)
 net = net.cuda()
 loss = nn.MSELoss()
 loss.cuda()
