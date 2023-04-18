@@ -28,7 +28,7 @@ parser.add_argument('--size', default=[256, 340], type=int, help='input image re
 parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/', type=str, help='output path')
 parser.add_argument('--name', default='snapshot.tiff', type=str, help='input path')
-parser.add_argument('--network', default='3DUNet', type=str, help='input path')
+parser.add_argument('--network', default='pat', type=str, help='input path')
 parser.add_argument('--inputType', default='noise', type=str, help='input path')
 parser.add_argument('--noiselvl', default=0.01, type=float)
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
