@@ -45,7 +45,7 @@ net = net.cuda()
 loss = nn.MSELoss()
 loss.cuda()
 
-optimizer = torch.optim.Adam([{'params': net.parameters()}], lr=args.LR)
+optimizer = torch.optim.AdamW([{'params': net.parameters()}], lr=args.LR)
 
 gt,imgt = meas2tensor(args)
 mask = code2tensor(args)

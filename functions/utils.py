@@ -52,7 +52,7 @@ def inputTensor(params):
         
     if params.inputType == 'hybrid':   
         
-        out1 = torch.rand(size=(params.size[0],params.size[1],params.frames))
+        out1 = torch.rand(size=(params.frames,params.size[0],params.size[1]))
         out1 = torch.unsqueeze(out1,0)
         out1 = torch.unsqueeze(out1,0)
         out1 = out1.cuda().float()
@@ -62,7 +62,7 @@ def inputTensor(params):
         out = out1*0.5+out2*0.5
         
         
-    return out
+    return out[0,:]
         
         
         
