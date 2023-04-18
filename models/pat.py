@@ -178,11 +178,5 @@ class PAM(nn.Module):
         buffers.append(x_left)
         out = self.fusion(torch.cat(tuple(buffers), 1))#, V_left_to_right), 1))
 
-        ## output
-        if is_training == 1:
-            return out, (None, None), (None, None), (None, None)#\
-               #(M_right_to_left.contiguous().view(b, h, w, w), M_left_to_right.contiguous().view(b, h, w, w)), \
-               #(M_left_right_left.view(b,h,w,w), M_right_left_right.view(b,h,w,w)), \
-               #(V_left_to_right, V_right_to_left)
-        if is_training == 0:
-            return out, M_right_to_lefts
+
+        return out, M_right_to_lefts
