@@ -2,6 +2,7 @@ from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
 from models.s2tnet import s2tnet
+from model.vivit import SwinTransformer3D
 
 
 
@@ -22,8 +23,8 @@ def getnetwork(params):
                need_sigmoid=True, need_bias=True, act_fun='LeakyReLU')
    
 
-    if params.network == '3dvae':
-       net = VAE()
+    if params.network == 'vivit':
+       net = SwinTransformer3D()
 
     return net
 
