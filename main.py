@@ -3,7 +3,8 @@ import argparse
 import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import numpy as np
-from models import *
+from models.unet import UNet
+from models.skip import skip
 from functions.utils import *
 import torch
 import torch.optim
@@ -35,13 +36,13 @@ if not os.path.exists(args.output):
 
 
 #Define Net
-net = skip(input_depth, img_np.shape[0], 
+net = skip(args.frames, args.frames, 
                num_channels_down = [128] * 5,
                num_channels_up =   [128] * 5,
                num_channels_skip =    [128] * 5,  
                filter_size_up = 3, filter_size_down = 3, 
                upsample_mode='nearest', filter_skip_size=1,
-               need_sigmoid=True, need_bias=True, pad=pad, act_fun='LeakyReLU').type(dtype)
+               need_sigmoid=True, need_bias=True, act_fun='LeakyReLU').type(dtype)
 net = net.cuda()
 loss = nn.MSELoss()
 loss.cuda()
