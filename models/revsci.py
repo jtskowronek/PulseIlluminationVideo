@@ -1,4 +1,4 @@
-from my_tools import *
+from models.my_tools import *
 
 
 class re_3dcnn(nn.Module):
