@@ -1,7 +1,7 @@
 from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
-
+from models.pat import PAT
 
 
 
@@ -21,6 +21,11 @@ def getnetwork(params):
                upsample_mode='nearest', filter_skip_size=1,
                need_sigmoid=True, need_bias=True, act_fun='LeakyReLU')
    
+    if params.network == 'pat':
+        
+        net = PAT(1, in_channel=params.frames,out_channel=params.frames, num_input=1)
+
+
 
 
     return net
