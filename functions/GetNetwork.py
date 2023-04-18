@@ -22,8 +22,8 @@ def getnetwork(params):
                need_sigmoid=True, need_bias=True, act_fun='LeakyReLU')
    
 
-    if params.network == 's2tnet':
-       net = s2tnet(in_chans=params.frames,output_chans=params.frames)
+    if params.network == 'stformer':
+       net = STFormer(in_chans=params.frames,output_chans=params.frames)
 
     return net
 
