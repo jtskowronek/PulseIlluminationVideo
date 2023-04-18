@@ -31,6 +31,7 @@ class re_3dcnn(nn.Module):
             self.layers.append(rev_3d_part1(64, num_group))
 
     def forward(self, y):
+        y = torch.unsqueeze(y,0)
         out = self.conv1(y)
 
         for layer in self.layers:
@@ -38,4 +39,4 @@ class re_3dcnn(nn.Module):
 
         out = self.conv2(out)
 
-        return out
+        return out[0,:]

@@ -19,7 +19,7 @@ def getnetwork(params):
                num_channels_skip =    [128] * 5,  
                filter_size_up = 3, filter_size_down = 3, 
                upsample_mode='nearest', filter_skip_size=1,
-               need_sigmoid=True, need_bias=True, act_fun='LeakyReLU').type(dtype)
+               need_sigmoid=True, need_bias=True, act_fun='LeakyReLU')
    
 
 
