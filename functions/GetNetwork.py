@@ -1,7 +1,7 @@
 from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
-from models.pat import PAT
+from models.s2tnet import s2tnet
 
 
 
@@ -21,12 +21,9 @@ def getnetwork(params):
                upsample_mode='nearest', filter_skip_size=1,
                need_sigmoid=True, need_bias=True, act_fun='LeakyReLU')
    
-    if params.network == 'pat':
-        
-        net = PAT(1, in_channel=params.frames,out_channel=params.frames, num_input=1)
 
-
-
+    if params.network == 's2tnet':
+       net = s2tnet(in_chans=params.frames,output_chans=params.frames)
 
     return net
 
