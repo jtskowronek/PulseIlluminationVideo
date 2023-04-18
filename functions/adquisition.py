@@ -2,7 +2,8 @@ import torch
 
 
 def adquisition(vid,mask,params):
-    
-    meas = torch.sum(vid*mask,1)
+    mask = torch.squeeze(mask)
+    vid = torch.squeeze(vid)
+    meas = torch.sum(vid*mask,0)
 
     return meas

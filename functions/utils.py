@@ -67,9 +67,9 @@ def inputTensor(params):
         
         
 def save2Mat(datacube,meas,gt,params):        
-        
-    vid = torch.permute(datacube,(2,3,1,0))     
-    vid = torch.squeeze(vid)
+
+    vid = torch.squeeze(datacube)   
+    vid = torch.permute(vid,(1,2,0))
     vid = vid.detach().cpu().numpy()
     
     gtm = torch.squeeze(gt)

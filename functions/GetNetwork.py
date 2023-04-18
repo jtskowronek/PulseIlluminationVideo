@@ -1,13 +1,13 @@
 from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
-from models.vivit import SwinTransformer3D
+from models.unet3d import UNet3D
 
 
 
 def getnetwork(params):
 
-    if params.network == '3DUNet':
+    if params.network == 'RevSCI':
 
         net = re_3dcnn(num_block=8,num_group=2)
 
@@ -22,8 +22,12 @@ def getnetwork(params):
                need_sigmoid=True, need_bias=True, act_fun='LeakyReLU')
    
 
-    if params.network == 'vivit':
-       net = SwinTransformer3D()
+    if params.network == '3DUNet':
+       net = UNet3D(in_channels=1,
+                      out_channels=1,
+                      num_groups = 4,
+                      final_sigmoid = False,
+                      is_segmentation=False)
 
     return net
 
