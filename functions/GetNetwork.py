@@ -1,8 +1,7 @@
 from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
-from models.s2tnet import s2tnet
-from model.vivit import SwinTransformer3D
+from models.vivit import SwinTransformer3D
 
 
 

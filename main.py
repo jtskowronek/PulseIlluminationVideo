@@ -21,16 +21,16 @@ dtype = torch.cuda.FloatTensor
 
 parser = argparse.ArgumentParser(description='Setting, compressive rate, size, and mode')
 
-parser.add_argument('--iter', default=8000, type=int, help='max epoch')
-parser.add_argument('--LR', default=0.01, type=float)
+parser.add_argument('--iter', default=4000, type=int, help='max epoch')
+parser.add_argument('--LR', default=0.005, type=float)
 parser.add_argument('--frames', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
 parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/', type=str, help='output path')
 parser.add_argument('--name', default='snapshot.tiff', type=str, help='input path')
-parser.add_argument('--network', default='vivit', type=str, help='input path')
-parser.add_argument('--inputType', default='noise', type=str, help='input path')
-parser.add_argument('--noiselvl', default=0.01, type=float)
+parser.add_argument('--network', default='skip', type=str, help='input path')
+parser.add_argument('--inputType', default='hybrid', type=str, help='input path')
+parser.add_argument('--noiselvl', default=0.005, type=float)
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
 args = parser.parse_args()
 
