@@ -44,6 +44,7 @@ def inputTensor(params):
         
         out = torch.rand(size=(params.frames,params.size[0],params.size[1]))
         out = torch.unsqueeze(out,0)
+        out = torch.unsqueeze(out,0)
         out = out.cuda().float()
         
     if params.inputType == 'meas':    
