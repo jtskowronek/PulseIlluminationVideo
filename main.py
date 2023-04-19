@@ -5,7 +5,6 @@ import os
 import numpy as np
 from functions.utils import *
 from functions.GetNetwork import *
-from functions.LossFn import *
 from functions.adquisition import *
 import tqdm
 import torch
