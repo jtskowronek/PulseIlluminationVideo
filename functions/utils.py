@@ -87,3 +87,16 @@ def plotTensor(t):
     t = t.detach().cpu().numpy()
     plt.imshow(t)
     plt.show()    
+
+
+
+def tv_loss(x):
+    '''Calculates TV loss for an image `x`.
+        
+    Args:
+        x: image, torch.Variable of torch.Tensor
+    '''
+    dh = torch.pow(x[:,:,:,1:] - x[:,:,:,:-1], 2)
+    dw = torch.pow(x[:,:,1:,:] - x[:,:,:-1,:], 2)
+    
+    return torch.sum(dh[:, :, :-1] + dw[:, :, :, :-1])    
