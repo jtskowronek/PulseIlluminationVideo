@@ -66,7 +66,7 @@ def inputTensor(params):
         
         
         
-def save2Mat(datacube,meas,gt,params):        
+def save2Mat(datacube,meas,gt,params,name):        
 
     vid = torch.squeeze(datacube)   
     vid = torch.permute(vid,(1,2,0))
@@ -78,7 +78,12 @@ def save2Mat(datacube,meas,gt,params):
     measo = torch.squeeze(meas)
     measo = measo.detach().cpu().numpy()
     
-    scio.savemat(params.output + "output.mat", {'vid': vid,'gt':gtm,'meas':measo})   
+    if type(name) is int:
+      nfile = "out_iter%.0d_.mat" % name
+    else:
+      nfile = "out_%s_.mat" % name
+
+    scio.savemat(params.output + nfile, {'vid': vid,'gt':gtm,'meas':measo})   
 
 
 

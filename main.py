@@ -10,7 +10,6 @@ import tqdm
 import torch
 import torch.optim
 import torch.nn as nn
-from torchmetrics import TotalVariation
 
 
 torch.backends.cudnn.enabled = True
@@ -23,6 +22,7 @@ parser = argparse.ArgumentParser(description='Setting, compressive rate, size, a
 
 parser.add_argument('--iter', default=3000, type=int, help='max epoch')
 parser.add_argument('--LR', default=0.005, type=float)
+parser.add_argument('--saveEach', default=300, type=int, help='max epoch')
 parser.add_argument('--frames', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
 parser.add_argument('--input', default='./input/', type=str, help='input path')
@@ -45,12 +45,10 @@ net = net.cuda()
 
 #Define Loss Fn
 loss_meas = nn.MSELoss()
-loss_tv = TotalVariation()
+loss_tv = tv_loss
 loss_l1 = nn.L1Loss()
 
 loss_meas  = loss_meas.cuda()
-loss_tv    = loss_tv.cuda()
-loss_l1 = loss_l1.cuda()
 
 optimizer = torch.optim.Adam([{'params': net.parameters()}], lr=args.LR)
 
@@ -78,10 +76,10 @@ for it in range(args.iter):
    
    #Compute Losses
    lm = loss_meas(torch.squeeze(meas), torch.squeeze(gt))
-   ltv = loss_tv(torch.squeeze(datacube))
-   l1 = loss_l1(torch.squeeze(datacube))
+   ltv = loss_tv(datacube)
+   l1 = torch.norm(torch.squeeze(datacube),1)
    
-   Loss = lm + 0.3*ltv + 0.3*l1
+   Loss = lm + 3e-5*ltv + 3e-6*l1
 
    Loss.backward()
    optimizer.step()
@@ -90,8 +88,28 @@ for it in range(args.iter):
       iter_loss = np.concatenate((iter_loss,[Loss.detach().cpu().numpy()]),0)
    else:
       iter_loss =  [Loss.detach().cpu().numpy()]
-   print("===> Iteration {} Complete: Avg. Loss: {:.12f}".format(it, Loss.detach().cpu().numpy()))
+   
+   
+   if it % args.saveEach==0:
+      save2Mat(datacube,meas,gt,args,it)
+      
+   if it == 1:
+       meas_b = meas
+       datacube_b = datacube
+       loss_b = Loss.detach().cpu().numpy()
+   
+   if it > 1 and Loss.detach().cpu().numpy() < loss_b:
+       meas_b = meas
+       datacube_b = datacube
+       loss_b = Loss.detach().cpu().numpy()
+       save2Mat(datacube_b,meas_b,gt,args,"best")
+       print("New Best!")
+       
+   print("===> Iter: %d - Total Loss: %.6f - TV: %6f - L1: %.6f" % (it,
+       Loss.detach().cpu().numpy(),ltv.detach().cpu().numpy(),3e-6*l1.detach().cpu().numpy()))    
+    
 
-save2Mat(datacube,meas,gt,args)
 
+
+save2Mat(datacube,meas,gt,args,"last")
 
