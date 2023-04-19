@@ -5,13 +5,14 @@ import os
 import numpy as np
 from functions.utils import *
 from functions.GetNetwork import *
+from functions.LossFn import *
 from functions.adquisition import *
 import tqdm
 import torch
 import torch.optim
 import torch.nn as nn
+from torchmetrics import TotalVariation
 
-from skimage.measure import compare_psnr
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark =True
@@ -31,7 +32,7 @@ parser.add_argument('--name', default='snapshot.tiff', type=str, help='input pat
 parser.add_argument('--network', default='3DUNet', type=str, help='input path')
 parser.add_argument('--inputType', default='hybrid', type=str, help='input path')
 parser.add_argument('--noiselvl', default=0.005, type=float)
-parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Code')
+parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Illumination Code')
 args = parser.parse_args()
 
 
@@ -42,10 +43,17 @@ if not os.path.exists(args.output):
 #Define Net
 net = getnetwork(args)
 net = net.cuda()
-loss = nn.MSELoss()
-loss.cuda()
 
-optimizer = torch.optim.AdamW([{'params': net.parameters()}], lr=args.LR)
+#Define Loss Fn
+loss_meas = nn.MSELoss()
+loss_tv = TotalVariation()
+loss_l1 = nn.L1Loss()
+
+loss_meas  = loss_meas.cuda()
+loss_tv    = loss_tv.cuda()
+loss_l1 = loss_l1.cuda()
+
+optimizer = torch.optim.Adam([{'params': net.parameters()}], lr=args.LR)
 
 gt,imgt = meas2tensor(args)
 mask = code2tensor(args)
@@ -69,7 +77,13 @@ for it in range(args.iter):
    
    meas = adquisition(datacube,mask,args)
    
-   Loss = loss(torch.squeeze(meas), torch.squeeze(gt))
+   #Compute Losses
+   lm = loss_meas(torch.squeeze(meas), torch.squeeze(gt))
+   ltv = loss_tv(torch.squeeze(datacube))
+   l1 = loss_l1(torch.squeeze(datacube))
+   
+   Loss = lm + 0.3*ltv + 0.3*l1
+
    Loss.backward()
    optimizer.step()
      
