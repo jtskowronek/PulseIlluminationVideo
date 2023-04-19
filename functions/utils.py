@@ -66,7 +66,7 @@ def inputTensor(params):
         
         
         
-def save2Mat(datacube,meas,gt,params,name):        
+def save2Mat(datacube,meas,gt,loss,params,name):        
 
     vid = torch.squeeze(datacube)   
     vid = torch.permute(vid,(1,2,0))
@@ -83,7 +83,7 @@ def save2Mat(datacube,meas,gt,params,name):
     else:
       nfile = "out_%s_.mat" % name
 
-    scio.savemat(params.output + nfile, {'vid': vid,'gt':gtm,'meas':measo})   
+    scio.savemat(params.output + nfile, {'vid': vid,'gt':gtm,'meas':measo,'loss_curve':loss,'INFO':params})   
 
 
 

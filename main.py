@@ -21,7 +21,9 @@ dtype = torch.cuda.FloatTensor
 parser = argparse.ArgumentParser(description='Setting, compressive rate, size, and mode')
 
 parser.add_argument('--iter', default=3000, type=int, help='max epoch')
-parser.add_argument('--LR', default=0.005, type=float)
+parser.add_argument('--LR', default=0.005, type=float, help='learning rate')
+parser.add_argument('--alpha1', default=1e-6, type=float, help='weigth for TV')
+parser.add_argument('--alpha2', default=1e-6, type=float, help='weigth for L1')
 parser.add_argument('--saveEach', default=300, type=int, help='max epoch')
 parser.add_argument('--frames', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
@@ -79,7 +81,7 @@ for it in range(args.iter):
    ltv = loss_tv(datacube)
    l1 = torch.norm(torch.squeeze(datacube),1)
    
-   Loss = lm + 3e-5*ltv + 3e-6*l1
+   Loss = lm + args.alpha1*ltv + args.alpha1*l1
 
    Loss.backward()
    optimizer.step()
@@ -105,8 +107,14 @@ for it in range(args.iter):
        save2Mat(datacube_b,meas_b,gt,args,"best")
        print("New Best!")
        
-   print("===> Iter: %d - Total Loss: %.6f - TV: %6f - L1: %.6f" % (it,
-       Loss.detach().cpu().numpy(),ltv.detach().cpu().numpy(),3e-6*l1.detach().cpu().numpy()))    
+
+
+   print("===> Iter: %d - Total Loss: %.5f = %5f+%.5f+%.5f" % (it,
+       Loss.detach().cpu().numpy(),
+       lm.detach().cpu().numpy(),
+       args.alpha1*ltv.detach().cpu().numpy(),
+       args.alpha1*l1.detach().cpu().numpy()
+       ))    
     
 
 
