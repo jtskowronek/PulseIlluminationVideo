@@ -55,7 +55,7 @@ loss_meas  = loss_meas.cuda()
 
 optimizer = torch.optim.Adam([{'params': net.parameters()}], lr=args.LR)
 
-gt,imgt = meas2tensor(args)
+gt,gtr,imgt,imr = meas2tensor(args)
 mask = code2tensor(args)
 
 tensor_in = inputTensor(args)
