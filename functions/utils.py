@@ -97,12 +97,28 @@ def plotTensor(t):
 
 
 def tv_loss(x):
+    x = torch.squeeze(x)
     '''Calculates TV loss for an image `x`.
         
     Args:
         x: image, torch.Variable of torch.Tensor
     '''
-    dh = torch.pow(x[:,:,:,1:] - x[:,:,:,:-1], 2)
-    dw = torch.pow(x[:,:,1:,:] - x[:,:,:-1,:], 2)
+    dh = torch.pow(x[:,:,1:] - x[:,:,:-1], 2)
+    dw = torch.pow(x[:,1:,:] - x[:,:-1,:], 2)
     
-    return torch.sum(dh[:, :, :-1] + dw[:, :, :, :-1])    
+    return torch.sum(dh[:, :-1] + dw[:, :, :-1])
+
+
+
+def tv3_loss(x):
+    x = torch.squeeze(x)
+    '''Calculates TV loss for an image `x`.
+        
+    Args:
+        x: image, torch.Variable of torch.Tensor
+    '''
+    dh = torch.pow(x[:,:,1:] - x[:,:,:-1], 2)
+    dw = torch.pow(x[:,1:,:] - x[:,:-1,:], 2)
+    dt = torch.pow(x[1:,:,:] - x[:-1,:,:], 2)
+    
+    return torch.sum(dh[:-1,:-1, :] + dw[:-1, :, :-1]  + dt[:, :-1, :-1])    

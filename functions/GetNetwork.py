@@ -1,7 +1,7 @@
 from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
-from models.unet3d import UNet3D
+from models.unet3d import UNet3D, ResidualUNet3D, ResidualUNetSE3D
 
 
 
@@ -26,7 +26,7 @@ def getnetwork(params):
        net = UNet3D(in_channels=1,
                       out_channels=1,
                       num_groups = 4,
-                      final_sigmoid = False,
+                      final_sigmoid = True,
                       is_segmentation=False)
 
     return net
