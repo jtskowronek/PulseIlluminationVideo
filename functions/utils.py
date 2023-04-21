@@ -15,7 +15,17 @@ def meas2tensor(params):
      inputT = torch.unsqueeze(inputT,0)
      inputT = torch.unsqueeze(inputT,0)
      inputT = inputT.cuda().float()
-     return inputT,im
+
+     fullpathR = params.input+params.nameRef
+     imR = Image.open(fullpathR)
+     imR = imR.resize(size=(params.size[1],params.size[0]))
+     imR = np.array(imR)
+     refT = torch.from_numpy(imR)/255
+     refT = torch.unsqueeze(refT,0)
+     refT = torch.unsqueeze(refT,0)
+     refT = inputT.cuda().float()
+
+     return inputT,refT,im,imR
 
 def code2tensor(params):
 
