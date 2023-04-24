@@ -23,13 +23,13 @@ def meas2tensor(params):
      refT = torch.from_numpy(imR)/255
      refT = torch.unsqueeze(refT,0)
      refT = torch.unsqueeze(refT,0)
-     refT = inputT.cuda().float()
+     refT = refT.cuda().float()
 
      return inputT,refT,im,imR
 
-def code2tensor(params):
+def code2tensor(params,code):
 
-    code = np.array(params.code)
+    code = np.array(code)
     code = torch.from_numpy(code)
 
     mask = torch.ones(size=(params.size[0],params.size[1],params.frames))
@@ -77,7 +77,7 @@ def inputTensor(params):
         
         
         
-def save2Mat(datacube,meas,gt,loss,params,name):        
+def save2Mat(datacube,meas,measR,gt,loss,params,name):        
 
     vid = torch.squeeze(datacube)   
     vid = torch.permute(vid,(1,2,0))
@@ -89,12 +89,15 @@ def save2Mat(datacube,meas,gt,loss,params,name):
     measo = torch.squeeze(meas)
     measo = measo.detach().cpu().numpy()
     
+    measoR = torch.squeeze(measR)
+    measoR = measoR.detach().cpu().numpy()
+    
     if type(name) is int:
       nfile = "out_iter%.0d_.mat" % name
     else:
       nfile = "out_%s_.mat" % name
 
-    scio.savemat(params.output + nfile, {'vid': vid,'gt':gtm,'meas':measo,'loss_curve':loss,'INFO':params})   
+    scio.savemat(params.output + nfile, {'vid': vid,'gt':gtm,'meas':measo,'measR':measoR,'loss_curve':loss,'INFO':params})   
 
 
 
@@ -118,6 +121,16 @@ def tv_loss(x):
     
     return torch.sum(dh[:, :-1] + dw[:, :, :-1])
 
+def tvt_loss(x):
+    x = torch.squeeze(x)
+    '''Calculates TV loss for an image `x`.
+        
+    Args:
+        x: image, torch.Variable of torch.Tensor
+    '''
+    dt = torch.pow(x[1:,:,:] - x[:-1,:,:], 2)
+    
+    return torch.sum(dt)
 
 
 def tv3_loss(x):

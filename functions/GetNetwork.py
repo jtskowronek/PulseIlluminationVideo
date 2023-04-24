@@ -1,8 +1,8 @@
 from models.unet import UNet
 from models.skip import skip
 from models.revsci import re_3dcnn
-from models.unet3d import UNet3D, ResidualUNet3D, ResidualUNetSE3D
-
+from models.unet3d import UNet3D, ResidualUNet3D, ResidualUNetSE3D,UNet2D
+from models.frameNet import FrameNet
 
 
 def getnetwork(params):
@@ -23,11 +23,18 @@ def getnetwork(params):
    
 
     if params.network == '3DUNet':
-       net = UNet3D(in_channels=1,
-                      out_channels=1,
+       net = UNet2D(in_channels=16,
+                      out_channels=16,
                       num_groups = 4,
-                      final_sigmoid = True,
+                      final_sigmoid = False,
                       is_segmentation=False)
+       
+    if params.network == 'FrameNet':
+       net = FrameNet(in_channels=16,
+                      out_channels=16,
+                      num_groups = 4,
+                      final_sigmoid = False,
+                      is_segmentation=False)   
 
     return net
 
