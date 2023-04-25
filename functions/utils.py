@@ -4,6 +4,7 @@ import numpy as np
 import torchvision.transforms.functional as F
 import scipy.io as scio
 import matplotlib.pyplot as plt
+from functions.adquisition import *
 
 
 def meas2tensor(params):
@@ -145,3 +146,14 @@ def tv3_loss(x):
     dt = torch.pow(x[1:,:,:] - x[:-1,:,:], 2)
     
     return torch.sum(dh[:-1,:-1, :] + dw[:-1, :, :-1]  + dt[:, :-1, :-1])    
+
+
+
+def ssim_loss(x,sl):
+    a = x[:,0:15,:,:]
+    b = x[:,1:16,:,:]
+    
+    
+    out = 1-sl(a,b)
+    
+    return out

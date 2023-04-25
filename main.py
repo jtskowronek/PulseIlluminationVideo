@@ -6,6 +6,7 @@ import numpy as np
 from functions.utils import *
 from functions.GetNetwork import *
 from functions.adquisition import *
+from functions.mssim import *
 import tqdm
 import torch
 import torch.optim
@@ -20,18 +21,18 @@ dtype = torch.cuda.FloatTensor
 
 parser = argparse.ArgumentParser(description='Setting, compressive rate, size, and mode')
 
-parser.add_argument('--iter', default=8000, type=int, help='max epoch')
-parser.add_argument('--LR', default=0.005, type=float, help='learning rate')
-parser.add_argument('--alpha1', default=0, type=float, help='weigth for TV')
-parser.add_argument('--alpha2', default=1e-5, type=float, help='weigth for L1')
-parser.add_argument('--saveEach', default=400, type=int, help='max epoch')
+parser.add_argument('--iter', default=12000, type=int, help='max epoch')
+parser.add_argument('--LR', default=0.001, type=float, help='learning rate')
+parser.add_argument('--alpha1', default=1e-7, type=float, help='weigth for TV')
+parser.add_argument('--alpha2', default=1e-2 , type=float, help='weigth for L1')
+parser.add_argument('--saveEach', default=600, type=int, help='max epoch')
 parser.add_argument('--frames', default=16, type=int, help='compressive rate')
-parser.add_argument('--size', default=[256, 340], type=int, help='input image resolution')
+parser.add_argument('--size', default=[128, 128], type=int, help='input image resolution')
 parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/skip_test/', type=str, help='output path')
-parser.add_argument('--name', default='snapshot1.tiff', type=str, help='input path')
-parser.add_argument('--nameRef', default='snapshot2.tiff', type=str, help='input path')
-parser.add_argument('--network', default='skip', type=str, help='input path')
+parser.add_argument('--name', default='snapshot_1.tiff', type=str, help='input path')
+parser.add_argument('--nameRef', default='snapshot_2.tiff', type=str, help='input path')
+parser.add_argument('--network', default='FrameNet', type=str, help='input path')
 parser.add_argument('--inputType', default='noise', type=str, help='input path')
 parser.add_argument('--noiselvl', default=0.001, type=float)
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Illumination Code')
@@ -51,6 +52,7 @@ net = net.cuda()
 loss_meas = nn.MSELoss()
 loss_tv = tv3_loss
 loss_l1 = nn.L1Loss()
+loss_ssim = SSIM(data_range=1.,channel=15)
 
 loss_meas  = loss_meas.cuda()
 
@@ -78,16 +80,17 @@ for it in range(args.iter):
    
    datacube = net(tensor_input)
    
-   meas = adquisition(datacube,mask)*2
+   meas = adquisition(datacube,mask)
    measR = adquisition(datacube,maskR)
    
    #Compute Losses
-   lm1 = loss_meas(torch.squeeze(meas) , torch.squeeze(gt)*2)
+   lm1 = loss_meas(torch.squeeze(meas) , torch.squeeze(gt))
    lm2 = loss_meas(torch.squeeze(measR), torch.squeeze(gtr))
-   ltv = loss_tv(datacube)
-   l1 = torch.norm(torch.squeeze(datacube),1)
+   ltv = tvt_loss(datacube)
+   l1 = torch.norm(torch.squeeze(datacube),1)**2
+   ls = ssim_loss(datacube,loss_ssim)
    
-   Loss = lm1 + 3*lm2 + args.alpha1*ltv + args.alpha2*l1
+   Loss = 1*lm1 + 10*lm2 + args.alpha1*ltv + args.alpha2*ls
 
    Loss.backward()
    optimizer.step()
@@ -122,7 +125,7 @@ for it in range(args.iter):
        lm1.detach().cpu().numpy(),
        lm2.detach().cpu().numpy(),
        args.alpha1*ltv.detach().cpu().numpy(),
-       args.alpha2*l1.detach().cpu().numpy()
+       args.alpha2*ls.detach().cpu().numpy()
        ))    
     
 

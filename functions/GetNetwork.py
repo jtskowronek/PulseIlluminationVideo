@@ -30,11 +30,7 @@ def getnetwork(params):
                       is_segmentation=False)
        
     if params.network == 'FrameNet':
-       net = FrameNet(in_channels=16,
-                      out_channels=16,
-                      num_groups = 4,
-                      final_sigmoid = False,
-                      is_segmentation=False)   
+       net = FrameNet()   
 
     return net
 
