@@ -22,9 +22,9 @@ dtype = torch.cuda.FloatTensor
 parser = argparse.ArgumentParser(description='Setting, compressive rate, size, and mode')
 
 parser.add_argument('--iter', default=12000, type=int, help='max epoch')
-parser.add_argument('--LR', default=0.001, type=float, help='learning rate')
+parser.add_argument('--LR', default=0.0001, type=float, help='learning rate')
 parser.add_argument('--alpha1', default=1e-7, type=float, help='weigth for TV')
-parser.add_argument('--alpha2', default=1e-2 , type=float, help='weigth for L1')
+parser.add_argument('--alpha2', default=1e-6 , type=float, help='weigth for L1')
 parser.add_argument('--saveEach', default=600, type=int, help='max epoch')
 parser.add_argument('--frames', default=16, type=int, help='compressive rate')
 parser.add_argument('--size', default=[128, 128], type=int, help='input image resolution')
@@ -32,9 +32,9 @@ parser.add_argument('--input', default='./input/', type=str, help='input path')
 parser.add_argument('--output', default='./output/skip_test/', type=str, help='output path')
 parser.add_argument('--name', default='snapshot_1.tiff', type=str, help='input path')
 parser.add_argument('--nameRef', default='snapshot_2.tiff', type=str, help='input path')
-parser.add_argument('--network', default='FrameNet', type=str, help='input path')
+parser.add_argument('--network', default='SCI3D', type=str, help='input path')
 parser.add_argument('--inputType', default='noise', type=str, help='input path')
-parser.add_argument('--noiselvl', default=0.001, type=float)
+parser.add_argument('--noiselvl', default=0.0001, type=float)
 parser.add_argument('--code', default=[1,0,1,1,1,0,0,0,1,0,1,1,0,1,1,1], type=int, help='Illumination Code')
 parser.add_argument('--codeR', default=[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], type=int, help='Illumination Code')
 args = parser.parse_args()
@@ -60,10 +60,11 @@ optimizer = torch.optim.Adam([{'params': net.parameters()}], lr=args.LR)
 
 gt,gtr,imgt,imr = meas2tensor(args)
 mask = code2tensor(args,args.code)
+mask = torch.unsqueeze(mask,0)
 maskR = code2tensor(args,args.codeR)
 
-tensor_in = inputTensor(args)
-#tensor_in = torch.unsqueeze(inputTensor(args),0)
+tensor_in = inputTensor(args)[:,0,:,:]
+tensor_in = torch.unsqueeze(tensor_in,0)
 
 
 # train loop
@@ -78,7 +79,9 @@ for it in range(args.iter):
       tensor_input = tensor_in
        
    
-   datacube = net(tensor_input)
+   #datacube = net(tensor_input,mask)
+   datacube = net(tensor_input,torch.permute(mask,(2,0,1,3,4)))
+   datacube = torch.permute(datacube,(1,2,0,3,4))[0,:,:,:,:]
    
    meas = adquisition(datacube,mask)
    measR = adquisition(datacube,maskR)

@@ -2,7 +2,7 @@ from models.skip import skip
 from models.revsci import re_3dcnn
 from models.frameNet import FrameNet
 from models.HQS_temporal_3DConv_RFMb_HSA import HQSNet
-
+import argparse
 
 def getnetwork(params):
 
@@ -23,11 +23,12 @@ def getnetwork(params):
 
     if params.network == 'SCI3D': 
         cnnpar = argparse.ArgumentParser(description='Setting, compressive rate, size, and mode')
-        cnnpar.add_argument('--layer_num', type=int, default=10, help='phase number of HQS-Net')
-        cnnpar.add_argument('--n_channels', type=int, default=1, help='1 for gray, 3 for color')
-        cnnpar.add_argument('--temporal_patch', type=int, default=3,
-                    help='the number of frames where temporal step takes as input')
-        model = HQSNet(cnnpar)
+        cnnpar.layer_num = 4
+        cnnpar.n_channels = 1
+        cnnpar.temporal_patch = 3
+        cnnpar.cs_ratio = 16
+        cnnpar.patch_size = 64
+        net = HQSNet(cnnpar)
 
     if params.network == 'FrameNet':
        net = FrameNet()   
