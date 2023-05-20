@@ -29,24 +29,44 @@ import argparse
 import json 
 import einops
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config",type=str,default='configs/STFormer/stformer_base.py')
-    parser.add_argument("--work_dir",type=str,default='./pulsed/3meas_coarse_nm/')
-    parser.add_argument("--device",type=str,default="cuda")
-    parser.add_argument("--distributed",type=bool,default=False)
-    parser.add_argument("--resume",type=str,default=None)
-    parser.add_argument("--local_rank",default=-1)
-    args = parser.parse_args()
-    args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    local_rank = int(args.local_rank) 
-    if args.distributed:
-        args.device = torch.device("cuda",local_rank)
-    return args
 
-def main():
-    args = parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument("--config",type=str,default='./configs/STFormer/stformer_base.py')
+parser.add_argument("--work_dir",type=str,default='./train_results/3meas_coarse_nm/')
+parser.add_argument("--dataset_path",type=str,default='D:/FOGuzman/PulseIlluminationVideo/dataset/DAVIS/JPEGImages/480p/')
+parser.add_argument("--device",type=str,default="cuda")
+parser.add_argument("--distributed",type=bool,default=False)
+parser.add_argument("--resolution",type=int,default=[256,256])
+parser.add_argument("--frames",type=int,default=16)
+parser.add_argument("--dataset_crop",type=int,default=[128,128])
+parser.add_argument("--resume",type=str,default=None)
+parser.add_argument("--Epochs",type=int,default=400)
+parser.add_argument("--batch_size",type=int,default=8)
+parser.add_argument("--learning_rate",type=int,default=0.0001)
+parser.add_argument("--saveImageEach",type=int,default=500)
+parser.add_argument("--saveModelEach",type=int,default=2)
+parser.add_argument("--local_rank",default=-1)
+parser.add_argument("--checkpoints",type=str,default=None)
+
+args = parser.parse_args()
+args.device = "cuda" if torch.cuda.is_available() else "cpu"
+if __name__ == '__main__':
     cfg = Config.fromfile(args.config)
+    cfg.resize_h,cfg.resize_w = args.resolution
+    cfg.crop_h,cfg.crop_w = args.dataset_crop
+    
+    cfg.train_pipeline[4]['resize_h'],cfg.train_pipeline[4]['resize_w'] = args.resolution
+    cfg.train_pipeline[1]['crop_h'],cfg.train_pipeline[1]['crop_w'] = args.dataset_crop
+    cfg.train_data.mask_shape = (args.resolution[0],args.resolution[1],args.frames)
+    
+
+    cfg.save_image_config['interval'] = args.saveImageEach
+    cfg.runner['max_epoch'] = args.Epochs
+    cfg.train_data['data_root'] = args.dataset_path
+    cfg.checkpoints = args.checkpoints
+    cfg.checkpoint_config['interval'] = args.saveModelEach
+    cfg.optimizer['lr'] = args.learning_rate
+    cfg.data['samples_per_gpu'] = args.batch_size
 
     if args.work_dir is None:
         args.work_dir = osp.join('./work_dirs',osp.splitext(osp.basename(args.config))[0])
@@ -80,10 +100,10 @@ def main():
     dash_line = '-' * 80 + '\n'
     device_info = get_device_info()
     env_info = '\n'.join(['{}: {}'.format(k,v) for k, v in device_info.items()])
-    
+
     device = args.device
     model = UNet(in_channel=16, out_channel=14, instance_norm=False).cuda()
-    
+
 
     if rank==0:
         logger.info('GPU info:\n' 
@@ -100,23 +120,27 @@ def main():
                 dash_line)
 
     mask,mask_s = generate_masks(cfg.train_data.mask_path,cfg.train_data.mask_shape)
-    print(mask)
+
+    
+
+
     train_data = build_dataset(cfg.train_data,{"mask":mask})
+
     if cfg.eval.flag:
         test_data = build_dataset(cfg.test_data,{"mask":mask})
     if args.distributed:
         dist_sampler = DistributedSampler(train_data,shuffle=True)
         train_data_loader = DataLoader(dataset=train_data, 
-                                        batch_size=cfg.data.samples_per_gpu,
+                                        batch_size=args.batch_size,
                                         sampler=dist_sampler,
                                         num_workers = cfg.data.workers_per_gpu)
     else:
         train_data_loader = DataLoader(dataset=train_data, 
-                                        batch_size=4,
+                                        batch_size=args.batch_size,
                                         shuffle=True,
                                         num_workers = cfg.data.workers_per_gpu)
     optimizer = build_optimizer(cfg.optimizer,{"params":model.parameters()})
-   # optimizer = StepLR(optimizer, step_size=30, gamma=0.8)
+    # optimizer = StepLR(optimizer, step_size=30, gamma=0.8)
     criterion = build_loss(cfg.loss)
     criterion = criterion.to(args.device)
     final_loss_sum = 0.
@@ -145,7 +169,7 @@ def main():
             optimizer.load_state_dict(optim_state_dict)
     if args.distributed:
         model = DDP(model,device_ids=[local_rank],output_device=local_rank,find_unused_parameters=True)
-    
+
     iter_num = len(train_data_loader) 
     for epoch in range(start_epoch,cfg.runner.max_epochs):
         epoch_loss = 0
@@ -224,5 +248,3 @@ def main():
             logger.info("Mean PSNR: \n{}.\n".format(psnr_str))
             logger.info("Mean SSIM: \n{}.\n".format(ssim_str))
         
-if __name__ == '__main__':
-    main()

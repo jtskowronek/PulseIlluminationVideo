@@ -6,7 +6,7 @@ _base_=[
 
 data = dict(
     samples_per_gpu=1,
-    workers_per_gpu=4,
+    workers_per_gpu=2,
 )
 
 resize_h,resize_w = 128,128

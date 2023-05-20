@@ -27,25 +27,45 @@ import argparse
 import json 
 import einops
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config",type=str,default='configs/STFormer/stformer_base.py')
-    parser.add_argument("--work_dir",type=str,default='./pulsed/3meas_long_nm/')
-    parser.add_argument("--device",type=str,default="cuda")
-    parser.add_argument("--distributed",type=bool,default=False)
-    parser.add_argument("--resume",type=str,default=None)
-    parser.add_argument("--local_rank",default=-1)
-    args = parser.parse_args()
-    args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    local_rank = int(args.local_rank) 
-    if args.distributed:
-        args.device = torch.device("cuda",local_rank)
-    return args
 
-def main():
-    args = parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument("--config",type=str,default='./configs/STFormer/stformer_base.py')
+parser.add_argument("--work_dir",type=str,default='./train_results/full_model/')
+parser.add_argument("--dataset_path",type=str,default='D:/FOGuzman/PulseIlluminationVideo/dataset/DAVIS/JPEGImages/480p/')
+parser.add_argument("--initModelPath",type=str,default='./pulsed/3meas_coarse_nm/checkpoints/epoch_398.pth')
+parser.add_argument("--device",type=str,default="cuda")
+parser.add_argument("--distributed",type=bool,default=False)
+parser.add_argument("--resolution",type=int,default=[256,256])
+parser.add_argument("--frames",type=int,default=16)
+parser.add_argument("--dataset_crop",type=int,default=[128,128])
+parser.add_argument("--resume",type=str,default=None)
+parser.add_argument("--Epochs",type=int,default=400)
+parser.add_argument("--batch_size",type=int,default=1)
+parser.add_argument("--learning_rate",type=int,default=0.0001)
+parser.add_argument("--saveImageEach",type=int,default=500)
+parser.add_argument("--saveModelEach",type=int,default=2)
+parser.add_argument("--local_rank",default=-1)
+parser.add_argument("--checkpoints",type=str,default=None)
+args = parser.parse_args()
+args.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+if __name__ == '__main__':
     cfg = Config.fromfile(args.config)
+    cfg.resize_h,cfg.resize_w = args.resolution
+    cfg.crop_h,cfg.crop_w = args.dataset_crop
+    
+    cfg.train_pipeline[4]['resize_h'],cfg.train_pipeline[4]['resize_w'] = args.resolution
+    cfg.train_pipeline[1]['crop_h'],cfg.train_pipeline[1]['crop_w'] = args.dataset_crop
+    cfg.train_data.mask_shape = (args.resolution[0],args.resolution[1],args.frames)
+    
 
+    cfg.save_image_config['interval'] = args.saveImageEach
+    cfg.runner['max_epoch'] = args.Epochs
+    cfg.train_data['data_root'] = args.dataset_path
+    cfg.checkpoints = args.checkpoints
+    cfg.checkpoint_config['interval'] = args.saveModelEach
+    cfg.optimizer['lr'] = args.learning_rate
+    cfg.data['samples_per_gpu'] = args.batch_size
     if args.work_dir is None:
         args.work_dir = osp.join('./work_dirs',osp.splitext(osp.basename(args.config))[0])
 
@@ -84,11 +104,17 @@ def main():
     
     DeModel = UNet(in_channel=16, out_channel=14, instance_norm=False).cuda()
     
-    resume_dict = torch.load("./pulsed/3meas_coarse_nm/checkpoints/epoch_398.pth")
-    model_state_dict = resume_dict["model_state_dict"]
-    load_checkpoints(DeModel,model_state_dict)
-    
-    #for name, para in DeModel.named_parameters():
+    if os.path.exists(args.initModelPath):
+        resume_dict = torch.load(args.initModelPath)
+        model_state_dict = resume_dict["model_state_dict"]
+        load_checkpoints(DeModel,model_state_dict)
+        print("Init Model checkpoint loaded")
+    else:
+        # File does not exist
+        print("Init Model checkpoint not found. Starting from scrach")
+
+
+    #for name, para in DeModel.named_parameters(): #Freeze Unet
     #   para.requires_grad = False
     
     if rank==0:
@@ -106,7 +132,6 @@ def main():
                 dash_line)
 
     mask,mask_s = generate_masks(cfg.train_data.mask_path,cfg.train_data.mask_shape)
-    print(mask)
     train_data = build_dataset(cfg.train_data,{"mask":mask})
     if cfg.eval.flag:
         test_data = build_dataset(cfg.test_data,{"mask":mask})
@@ -231,6 +256,3 @@ def main():
             ssim_str = ", ".join([key+": "+"{:.4f}".format(ssim_dict[key]) for key in ssim_dict.keys()])
             logger.info("Mean PSNR: \n{}.\n".format(psnr_str))
             logger.info("Mean SSIM: \n{}.\n".format(ssim_str))
-
-if __name__ == '__main__':
-    main()

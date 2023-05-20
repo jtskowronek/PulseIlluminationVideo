@@ -11,7 +11,7 @@ gene_meas = dict(type='GenerationGrayMeas')
 
 train_data = dict(
     type="DavisData",
-    data_root="/home/fg/Desktop/PulsedIlluminationRS/STFormer-main/dataset/DAVIS/JPEGImages/480p",
+    data_root="asdf",
     mask_path="test_datasets/mask/shutter_mask16.mat",
     pipeline=train_pipeline,
     gene_meas = gene_meas,
