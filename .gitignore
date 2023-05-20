@@ -1,3 +1,2 @@
-functions/__pycache__/
-models/__pycache__/
-output/
+*.pyc
+dataset/
