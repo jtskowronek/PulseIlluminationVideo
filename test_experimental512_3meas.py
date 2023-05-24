@@ -25,14 +25,14 @@ from paralelize_patches import *
 from scipy.io import savemat
 import matplotlib.pyplot as plt
 
-rsize = 256
+rsize = 128
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='configs/STFormer/stformer_base.py')
-parser.add_argument("--test_path",type=str,default="./experimental_data/meas3r16/test1/" + str(rsize) +"/")
-parser.add_argument("--save_path",type=str,default='./experimental_data/meas3r16/test1/r' + str(rsize) +'/')
-parser.add_argument("--demodel_path",type=str,default='./pulsed/3meas_coarse/checkpoints/epoch_398.pth')
-parser.add_argument("--stt_path",type=str,default='./pulsed/3meas_long/checkpoints/epoch_54.pth')
+parser.add_argument("--test_path",type=str,default="./test_datasets/meas3r16/test3/" + str(rsize) +"/")
+parser.add_argument("--save_path",type=str,default='./test_datasets/meas3r16/test3/r' + str(rsize) +'/')
+parser.add_argument("--demodel_path",type=str,default='')
+parser.add_argument("--stt_path",type=str,default='./train_results/full_model/checkpoints/epoch_156.pth')
 parser.add_argument("--device",type=str,default="cuda")
 parser.add_argument('--size', default=[rsize,rsize], type=int, help='input image resolution')
 parser.add_argument('--frames', default=14, type=int, help='input image frames')
@@ -45,7 +45,7 @@ if not osp.exists(args.save_path):
 
 cfg = Config.fromfile(args.config)
 model = build_model(cfg.model).to(args.device)  
-DeModel = UNet(in_channel=64, out_channel=args.frames, instance_norm=False).to(args.device)  
+DeModel = UNet(in_channel=16, out_channel=14, instance_norm=False).to(args.device)  
 
 
 resume_dict = torch.load(args.stt_path)
@@ -105,7 +105,7 @@ for iter,data in enumerate(test_data_loader):
     out = torch.zeros(size=(patches.shape[0],args.frames,128,128),device=args.device)
     full = torch.zeros(size=(1,args.frames,args.size[0],args.size[1]),device=args.device)
     for ph in range(patches.shape[0]):   
-        de_meas = DeModel(patches[ph:ph+1,:,:,:])
+        de_meas = DeModel(patches[ph:ph+1,:,:,:],Phi,Phi_s)
         out_s = model(de_meas,Phi,Phi_s)
         out[ph:ph+1,:,:,:] = out_s[0]
     

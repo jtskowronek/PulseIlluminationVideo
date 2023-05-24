@@ -140,8 +140,7 @@ if __name__ == '__main__':
                                         shuffle=True,
                                         num_workers = cfg.data.workers_per_gpu)
     optimizer = build_optimizer(cfg.optimizer,{"params":model.parameters()})
-    # optimizer = StepLR(optimizer, step_size=30, gamma=0.8)
-    criterion = build_loss(cfg.loss)
+    #criterion = build_loss(cfg.loss)
     criterion = criterion.to(args.device)
     final_loss_sum = 0.
     start_epoch = 0

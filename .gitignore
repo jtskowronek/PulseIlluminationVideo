@@ -1,3 +1,5 @@
 *.pyc
 dataset/
 train_results/
+test_datasets/meas3r16
+Model2/
