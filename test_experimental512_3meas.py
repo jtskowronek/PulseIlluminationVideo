@@ -29,8 +29,8 @@ rsize = 128
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='configs/STFormer/stformer_base.py')
-parser.add_argument("--test_path",type=str,default="./test_datasets/meas3r16/test3/" + str(rsize) +"/")
-parser.add_argument("--save_path",type=str,default='./test_datasets/meas3r16/test3/r' + str(rsize) +'/')
+parser.add_argument("--test_path",type=str,default="./test_datasets/exp_24-05-2023/processed/coded/test6/" + str(rsize) +"/")
+parser.add_argument("--save_path",type=str,default='./test_datasets/exp_24-05-2023/processed/coded/test6/r' + str(rsize) +'/')
 parser.add_argument("--demodel_path",type=str,default='')
 parser.add_argument("--stt_path",type=str,default='./train_results/full_model/checkpoints/epoch_156.pth')
 parser.add_argument("--device",type=str,default="cuda")
