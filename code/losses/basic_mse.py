@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class Loss(nn.Module):
     
-    def __init__(self):
+    def __init__(self,cfg):
         super(Loss, self).__init__()
 
     def forward(self, inputs, targets):        

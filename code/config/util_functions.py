@@ -1,6 +1,6 @@
-
+import os.path as osp
 from config.config_file import Config
-
+import os
 
 
 def update_cfg(args):
@@ -28,4 +28,20 @@ def update_cfg(args):
 
     if args.resume is not None:
         cfg.resume = args.resume
+
+
+
+    cfg.log_dir = osp.join("./train_results"+args.work_dir,"log")
+    cfg.show_dir = osp.join("./train_results"+args.work_dir,"show")
+    cfg.train_image_save_dir = osp.join("./train_results"+args.work_dir,"train_images")
+    cfg.checkpoints_dir = osp.join("./train_results"+args.work_dir,"checkpoints")
+
+    if not osp.exists(cfg.log_dir):
+        os.makedirs(cfg.log_dir)
+    if not osp.exists(cfg.show_dir):
+        os.makedirs(cfg.show_dir)
+    if not osp.exists(cfg.train_image_save_dir):
+        os.makedirs(cfg.train_image_save_dir)
+    if not osp.exists(cfg.checkpoints_dir):
+        os.makedirs(cfg.checkpoints_dir)    
     return cfg

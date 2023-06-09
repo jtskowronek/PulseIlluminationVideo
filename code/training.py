@@ -28,16 +28,14 @@ import einops
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
-parser.add_argument("--work_dir",type=str,default='./train_results/full_modelv2/')
+parser.add_argument("--work_dir",type=str,default='/full_modelv4/')
 parser.add_argument("--train_dataset_path",type=str,default='./dataset/DAVIS/JPEGImages/480p/')
-parser.add_argument("--test_dataset_path",type=str,default='./dataset/DAVIS/JPEGImages/480p/')
+parser.add_argument("--test_dataset_path",type=str,default='./dataset/test_dataset/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
 parser.add_argument("--model_module",type=str,default='base_model')
-parser.add_argument("--loss_module",type=str,default='basic_mse')
-parser.add_argument("--device",type=str,default="cuda")
-parser.add_argument("--distributed",type=bool,default=False)
+parser.add_argument("--loss_module",type=str,default='loss_test2')
+parser.add_argument('--gpu', default="0", type=str)
 parser.add_argument("--resolution",type=int,default=[64,64])
-parser.add_argument("--STTResize",type=int,default=64)
 parser.add_argument("--frames",type=int,default=16)
 parser.add_argument("--dataset_crop",type=int,default=[32,32])
 parser.add_argument("--resume",type=str,default=None)
@@ -49,36 +47,37 @@ parser.add_argument("--saveModelEach",type=int,default=1)
 parser.add_argument("--checkpoints",type=str,default=None)
 args = parser.parse_args()
 args.device = "cuda"
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
+n_gpu = torch.cuda.device_count()
+print(torch.cuda.is_available())
+print('The number of GPU is {} using {}'.format(n_gpu,args.gpu))
+
 
 if __name__ == '__main__':
 
     cfg = update_cfg(args)
     
-    log_dir = osp.join(args.work_dir,"log")
-    show_dir = osp.join(args.work_dir,"show")
-    train_image_save_dir = osp.join(args.work_dir,"train_images")
-    checkpoints_dir = osp.join(args.work_dir,"checkpoints")
-
-    if not osp.exists(log_dir):
-        os.makedirs(log_dir)
-    if not osp.exists(show_dir):
-        os.makedirs(show_dir)
-    if not osp.exists(train_image_save_dir):
-        os.makedirs(train_image_save_dir)
-    if not osp.exists(checkpoints_dir):
-        os.makedirs(checkpoints_dir)
-
-    logger = Logger(log_dir)
-    writer = SummaryWriter(log_dir = show_dir)
+    logger = Logger(cfg.log_dir)
+    writer = SummaryWriter(log_dir = cfg.show_dir)
 
     dash_line = '-' * 80 + '\n'
     device_info = get_device_info()
     env_info = '\n'.join(['{}: {}'.format(k,v) for k, v in device_info.items()])
-    
-    device = args.device
-    CNNmethod = importlib.import_module('models.'+ args.model_module)
-    model = CNNmethod.cnnModel(frames=args.frames).cuda()  
 
+    ## Load cuda devide
+    device = args.device
+
+    ## Import model
+    CNNmethod = importlib.import_module('models.'+ args.model_module)
+    model = CNNmethod.cnnModel(frames=args.frames).to(args.device)
+
+    ## Import Loss()
+    LossMethod = importlib.import_module('losses.'+ args.loss_module)
+    loss_function = LossMethod.Loss(cfg).to(args.device)
+    
+    ## Optimizer
+    optimizer = torch.optim.AdamW([{'params': model.parameters()}], lr=args.learning_rate)
 
     logger.info('GPU info:\n' 
                 + dash_line + 
@@ -93,6 +92,8 @@ if __name__ == '__main__':
                 str(model)+'\n'+
                 dash_line)
 
+
+    ## Preparing dataset
     mask,mask_s = generate_masks(cfg.train_data.mask_path,cfg.train_data.mask_shape)
     train_data = build_dataset(cfg.train_data,{"mask":mask})
     test_data = build_dataset(cfg.test_data,{"mask":mask})
@@ -101,12 +102,11 @@ if __name__ == '__main__':
                                         shuffle=True,
                                         num_workers = cfg.data.workers_per_gpu)
     
-    optimizer = torch.optim.AdamW([{'params': model.parameters()}], lr=args.learning_rate)
+    
     
 
 
-    LossMethod = importlib.import_module('losses.'+ args.loss_module)
-    loss_function = LossMethod.Loss().to(args.device)
+    
     
     start_epoch = 0
     if cfg.checkpoints is not None:
@@ -173,7 +173,7 @@ if __name__ == '__main__':
                 sing_out = model_out_f[0].detach().cpu().numpy()
                 sing_gt = gt[0].cpu().numpy()
                 sing_mask = mask
-                image_name = osp.join(train_image_save_dir,str(epoch)+"_"+str(iteration)+".png")
+                image_name = osp.join(cfg.train_image_save_dir,str(epoch)+"_"+str(iteration)+".png")
                 save_image(sing_out,sing_gt,sing_mask,image_name)
         end_time = time.time()
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
                 "model_state_dict": save_model.state_dict(), 
                 "optim_state_dict": optimizer.state_dict(), 
             }
-            torch.save(checkpoint_dict,osp.join(checkpoints_dir,"epoch_"+str(epoch)+".pth")) 
+            torch.save(checkpoint_dict,osp.join(cfg.checkpoints_dir,"epoch_"+str(epoch)+".pth")) 
 
         if cfg.eval.flag and epoch % cfg.eval.interval==0:
             psnr_dict,ssim_dict = eval_psnr_ssim(model,test_data,mask,mask_s,args)
