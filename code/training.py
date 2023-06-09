@@ -68,8 +68,6 @@ if __name__ == '__main__':
     LossMethod = importlib.import_module('losses.'+ args.loss_module)
     loss_function = LossMethod.Loss(cfg).to(args.device)
     
-    ## Optimizer
-    optimizer = torch.optim.AdamW([{'params': model.parameters()}], lr=args.learning_rate)
 
     logger.info('GPU info:\n' 
                 + dash_line + 
@@ -121,6 +119,7 @@ if __name__ == '__main__':
     iter_num = len(train_data_loader) 
     for epoch in range(start_epoch,cfg.runner.max_epochs):
         epoch_loss = 0
+        optimizer = torch.optim.AdamW([{'params': model.parameters()}], lr=args.learning_rate)
         model = model.train()
         start_time = time.time()
         for iteration, data in enumerate(train_data_loader):
@@ -159,6 +158,8 @@ if __name__ == '__main__':
                 save_image(sing_out,sing_gt,sing_mask,image_name)
         end_time = time.time()
 
+        
+
         logger.info("epoch: {}, avg_loss: {:.5f}, time: {:.2f}s.\n".format(epoch,epoch_loss/(iteration+1),end_time-start_time))
 
         if (epoch % cfg.checkpoint_config.interval) == 0:
@@ -181,3 +182,6 @@ if __name__ == '__main__':
             logger.info("Mean SSIM: \n{}.\n".format(ssim_str))
             writer.add_scalar("psnr_metric",psnr_values[-1],epoch*len(train_data_loader) + iteration)
             writer.add_scalar("ssim_metric",ssim_values[-1],epoch*len(train_data_loader) + iteration)
+        if (epoch % 5 == 0) and (epoch < 100):
+            args.learning_rate = args.learning_rate * 0.95  
+
