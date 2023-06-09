@@ -2,4 +2,4 @@
 dataset/
 train_results/
 test_datasets/
-Model2/
+code/models/film_net_fp32.pt
