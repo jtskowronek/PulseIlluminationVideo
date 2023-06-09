@@ -68,6 +68,8 @@ if __name__ == '__main__':
     LossMethod = importlib.import_module('losses.'+ args.loss_module)
     loss_function = LossMethod.Loss(cfg).to(args.device)
     
+    ## Init optimizer
+    optimizer = torch.optim.AdamW([{'params': model.parameters()}], lr=args.learning_rate)
 
     logger.info('GPU info:\n' 
                 + dash_line + 
