@@ -134,12 +134,6 @@ if __name__ == '__main__':
             meas = meas.unsqueeze(1).float().to(args.device)
             batch_size = meas.shape[0]
 
-            #Phi = einops.repeat(mask,'cr h w->b cr h w',b=batch_size)
-            #Phi_s = einops.repeat(mask_s,'h w->b 1 h w',b=batch_size)
-
-            #Phi = torch.from_numpy(Phi).to(args.device)
-            #Phi_s = torch.from_numpy(Phi_s).to(args.device)
-
             optimizer.zero_grad()
             meas_f = torch.cat((gt[:,0:1,:,:],meas,gt[:,-1:,:,:]),1)
 
