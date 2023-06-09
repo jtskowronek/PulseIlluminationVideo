@@ -95,11 +95,6 @@ if __name__ == '__main__':
                                         num_workers = cfg.data.workers_per_gpu)
     
     
-    
-
-
-    
-    
     start_epoch = 0
     if cfg.checkpoints is not None:
             logger.info("Load pre_train model...")
