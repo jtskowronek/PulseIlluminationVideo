@@ -4,26 +4,18 @@ import sys
 import importlib
 BASE_DIR = osp.dirname(osp.dirname(osp.abspath(__file__)))
 sys.path.append(BASE_DIR)
-import bisect
 from torch.utils.data import DataLoader
-
 from config.dataset.builder import build_dataset
 from config.utils.mask import generate_masks
-from config.config_file import Config
 from config.utils.logger import Logger
 from config.utils.utils import save_image, load_checkpoints, get_device_info
 from config.utils.eval_full import eval_psnr_ssim
 from config.util_functions import *
 import torch
 from torch.utils.tensorboard import SummaryWriter
-import torch.distributed as dist
-from torch.utils.data.distributed import DistributedSampler
-from torch.nn.parallel import DistributedDataParallel as DDP
-import numpy as np
 import time
 import argparse 
 import json 
-import einops
 
 
 parser = argparse.ArgumentParser()
@@ -169,6 +161,7 @@ if __name__ == '__main__':
                 iter_len = len(str(iter_num))
                 logger.info("epoch: [{}][{:>{}}/{}], lr: {:.6f}, loss: {:.5f}.".format(epoch,iteration,iter_len,iter_num,lr,loss.item()))
                 writer.add_scalar("loss",loss.item(),epoch*len(train_data_loader) + iteration)
+                
             if (iteration % cfg.save_image_config.interval) == 0:
                 sing_out = model_out_f[0].detach().cpu().numpy()
                 sing_gt = gt[0].cpu().numpy()
@@ -189,9 +182,13 @@ if __name__ == '__main__':
             }
             torch.save(checkpoint_dict,osp.join(cfg.checkpoints_dir,"epoch_"+str(epoch)+".pth")) 
 
-        if cfg.eval.flag and epoch % cfg.eval.interval==0:
+        if epoch % cfg.eval.interval==0:
             psnr_dict,ssim_dict = eval_psnr_ssim(model,test_data,mask,mask_s,args)
             psnr_str = ", ".join([key+": "+"{:.4f}".format(psnr_dict[key]) for key in psnr_dict.keys()])           
             ssim_str = ", ".join([key+": "+"{:.4f}".format(ssim_dict[key]) for key in ssim_dict.keys()])
+            psnr_values = list(psnr_dict.values())
+            ssim_values = list(ssim_dict.values())
             logger.info("Mean PSNR: \n{}.\n".format(psnr_str))
             logger.info("Mean SSIM: \n{}.\n".format(ssim_str))
+            writer.add_scalar("psnr_metric",psnr_values[-1],epoch*len(train_data_loader) + iteration)
+            writer.add_scalar("ssim_metric",ssim_values[-1],epoch*len(train_data_loader) + iteration)
