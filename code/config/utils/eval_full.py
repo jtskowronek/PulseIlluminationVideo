@@ -9,43 +9,8 @@ import einops
 import bisect
 
 
-def inference(Demodel, img_batch_1, img_batch_2, inter_frames):
-        results = [
-            img_batch_1,
-            img_batch_2
-        ]
 
-        idxes = [0, inter_frames + 1]
-        remains = list(range(1, inter_frames + 1))
-
-        splits = torch.linspace(0, 1, inter_frames + 2)
-
-        for _ in range(len(remains)):
-            starts = splits[idxes[:-1]]
-            ends = splits[idxes[1:]]
-            distances = ((splits[None, remains] - starts[:, None]) / (ends[:, None] - starts[:, None]) - .5).abs()
-            matrix = torch.argmin(distances).item()
-            start_i, step = np.unravel_index(matrix, distances.shape)
-            end_i = start_i + 1
-
-            x0 = results[start_i]
-            x1 = results[end_i]
-
-            x0 = x0.cuda()
-            x1 = x1.cuda()
-
-            dt = x0.new_full((1, 1), (splits[remains[step]] - splits[idxes[start_i]])) / (splits[idxes[end_i]] - splits[idxes[start_i]])
-
-            with torch.no_grad():
-                prediction = Demodel(x0, x1, dt)
-            insert_position = bisect.bisect_left(idxes, remains[step])
-            idxes.insert(insert_position, remains[step])
-            results.insert(insert_position, prediction.clamp(0, 1).cpu().float())
-            del remains[step]
-        return results
-
-
-def eval_psnr_ssim(model,Demodel,test_data,mask,mask_s,args):
+def eval_psnr_ssim(model,test_data,mask,mask_s,args):
     psnr_dict,ssim_dict = {},{}
     psnr_list,ssim_list = [],[]
     out_list,gt_list = [],[]

@@ -49,7 +49,6 @@ print('The number of GPU is {} using {}'.format(n_gpu,args.gpu))
 if __name__ == '__main__':
 
     cfg = update_cfg(args)
-    
     logger = Logger(cfg.log_dir)
     writer = SummaryWriter(log_dir = cfg.show_dir)
 

@@ -31,10 +31,10 @@ def update_cfg(args):
 
 
 
-    cfg.log_dir = osp.join("./train_results"+args.work_dir,"log")
-    cfg.show_dir = osp.join("./train_results"+args.work_dir,"show")
-    cfg.train_image_save_dir = osp.join("./train_results"+args.work_dir,"train_images")
-    cfg.checkpoints_dir = osp.join("./train_results"+args.work_dir,"checkpoints")
+    cfg.log_dir = osp.join("./train_results/"+args.work_dir,"log")
+    cfg.show_dir = osp.join("./train_results/"+args.work_dir,"show")
+    cfg.train_image_save_dir = osp.join("./train_results/"+args.work_dir,"train_images")
+    cfg.checkpoints_dir = osp.join("./train_results/"+args.work_dir,"checkpoints")
 
     if not osp.exists(cfg.log_dir):
         os.makedirs(cfg.log_dir)
