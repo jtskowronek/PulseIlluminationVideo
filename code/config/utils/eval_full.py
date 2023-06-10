@@ -73,11 +73,8 @@ def eval_psnr_ssim(model,Demodel,test_data,mask,mask_s,args):
             single_meas = meas[ii].unsqueeze(0).unsqueeze(0)
             meas_f = torch.cat((meas1,single_meas,meas2),1)
             with torch.no_grad():
-                single_meas = inference(Demodel,meas1.repeat(1,3,1,1),meas2.repeat(1,3,1,1),14)
-                single_meas = [torch.sum(single_meas[k],dim=1,keepdim=True).cuda() for k in range(args.frames)]
-                single_meas = torch.stack(single_meas, dim=1)[:,:,0,:,:]
                 
-                outputs = model(single_meas, meas_f,args)
+                outputs = model(meas_f,args)
             if not isinstance(outputs,list):
                 outputs = [outputs]
                 
