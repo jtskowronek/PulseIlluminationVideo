@@ -65,7 +65,7 @@ def eval_psnr_ssim(model,test_data,mask,mask_s,args):
         out_list.append(np.array(batch_output))
         gt_list.append(gt)
 
-    test_dir = osp.join(args.work_dir,"test_images")
+    test_dir = osp.join("./train_results/"+args.work_dir,"test_images")
     if not osp.exists(test_dir):
         os.makedirs(test_dir)
 
