@@ -1,4 +1,4 @@
 *.pyc
-code/dataset/DAVIS
+code/dataset/
 code/train_results/
 code/models/film_net_fp32.pt
