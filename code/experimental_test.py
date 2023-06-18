@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     test_dataset = Imgdataset(args.test_dataset_path)
 
-    for iteration, data in enumerate(train_data_loader):
+    for iteration, data in enumerate(test_dataset):
         meas0,meas1,measc = data
         meas0 = meas0.to(args.device)
         meas1 = meas1.to(args.device)
@@ -60,8 +60,5 @@ if __name__ == '__main__':
         model_out = model(meas_f,args)
         model_out_f = torch.cat((meas0,model_out[:,1:-1,:,:],meas1),1)
         
-
-        if not isinstance(model_out,list):
-            model_out = [model_out_f]
 
 

@@ -1,4 +1,5 @@
 *.pyc
 code/dataset/
+code/training_results/
 code/train_results/
 code/models/film_net_fp32.pt

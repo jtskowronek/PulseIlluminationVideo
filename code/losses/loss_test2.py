@@ -6,10 +6,10 @@ from config.utils.mask import generate_masks
 
 class Loss(nn.Module):
     
-    def __init__(self,cfg):
+    def __init__(self,args):
         super(Loss, self).__init__()
-        mask,mask_s = generate_masks(cfg.train_data.mask_path,cfg.train_data.mask_shape)
-        batch_size = cfg.data['samples_per_gpu']
+        mask,mask_s = generate_masks(args.mask_path,args.vid_shape)
+        batch_size = args.batch_size
         self.Phi = torch.from_numpy(einops.repeat(mask,'cr h w->b cr h w',b=batch_size)).cuda()
         self.Phi_s = torch.from_numpy(einops.repeat(mask_s,'h w->b 1 h w',b=batch_size)).cuda()
         self.lamb1 = 0.1
