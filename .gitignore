@@ -2,3 +2,4 @@
 code/dataset/DAVIS
 code/train_results/
 code/models/film_net_fp32.pt
+code/base_mode-lossv2/
