@@ -12,15 +12,10 @@ class Loss(nn.Module):
         batch_size = args.batch_size
         self.Phi = torch.from_numpy(einops.repeat(mask,'cr h w->b cr h w',b=batch_size)).cuda()
         self.Phi_s = torch.from_numpy(einops.repeat(mask_s,'h w->b 1 h w',b=batch_size)).cuda()
-        self.lamb1 = 0.1
 
     def forward(self, f_hat, f_gt):
         g_gt = A(f_gt,self.Phi)
         g_hat = A(f_hat,self.Phi)
-
-        L1 = torch.sqrt(torch.mean((f_hat-f_gt)**2))
         L2 = torch.sqrt(torch.mean((g_hat-g_gt)**2))
-        loss =  L1+self.lamb1*L2      
+        loss =  L2      
         return loss
-    
-    
