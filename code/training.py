@@ -5,7 +5,6 @@ import importlib
 BASE_DIR = osp.dirname(osp.dirname(osp.abspath(__file__)))
 sys.path.append(BASE_DIR)
 from torch.utils.data import DataLoader
-from config.dataset.builder import build_dataset
 from config.utils.mask import generate_masks
 from config.utils.utils import save_image, load_checkpoints, get_device_info
 from config.utils.eval_full import eval_psnr_ssim
@@ -21,20 +20,20 @@ import json
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--experimentName",type=str,default='test')
+parser.add_argument("--experimentName",type=str,default='test_chess')
 parser.add_argument("--train_dataset_path",type=str,default='./dataset/Preprocess_DAVIS/')
 parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_test_dataset/')
-parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
+parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask18_chess_led.mat')
 parser.add_argument("--model_module",type=str,default='base_model')
 parser.add_argument("--loss_module",type=str,default='loss_test2')
 parser.add_argument('--gpu', default="0", type=str)
-parser.add_argument("--resolution",type=eval,default=[64,64])
-parser.add_argument("--frames",type=int,default=16)
+parser.add_argument("--resolution",type=eval,default=[144,144])
+parser.add_argument("--frames",type=int,default=18)
 parser.add_argument("--resume",type=str,default=None)
 parser.add_argument("--checkpoints",type=str,default=None)
 parser.add_argument("--Epochs",type=int,default=100)
 parser.add_argument("--batch_size",type=int,default=1)
-parser.add_argument("--learning_rate",type=int,default=0.0001)
+parser.add_argument("--learning_rate",type=int,default=0.0005)
 parser.add_argument("--saveImageEach",type=int,default=500)
 parser.add_argument("--saveModelEach",type=int,default=1)
 
