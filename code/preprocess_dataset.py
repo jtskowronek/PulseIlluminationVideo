@@ -19,11 +19,11 @@ parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--train_dataset_path",type=str,default='./dataset/DAVIS/JPEGImages/480p/')
 parser.add_argument("--preprocess_path_train",type=str,default='./dataset/Preprocess_DAVIS/')
 parser.add_argument("--preprocess_path_test", type=str,default='./dataset/Preprocess_test_dataset/')
-parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
+parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask18_chess_led.mat')
 parser.add_argument('--gpu', default="0", type=str)
-parser.add_argument("--resolution",type=eval,default=[64,64])
-parser.add_argument("--frames",type=int,default=16)
-parser.add_argument("--dataset_crop",type=eval,default=[64,64])
+parser.add_argument("--resolution",type=eval,default=[150,150])
+parser.add_argument("--frames",type=int,default=18)
+parser.add_argument("--dataset_crop",type=eval,default=[150,150])
 parser.add_argument("--batch_size",type=int,default=1)
 args = parser.parse_args()
 args.device = "cuda"
@@ -77,17 +77,17 @@ if __name__ == '__main__':
                                         shuffle=True)
     
 
-    # iter_num = len(train_data_loader) 
-    # start_time = time.time()
-    # for iteration, data in tqdm(enumerate(train_data_loader),
-    #                              desc ="Processing training data... ",colour="red",
-    #                              total=iter_num,
-    #                              ascii=' 123456789═'):
-    #     gt, meas = data
-    #     gt = gt[0].float().to(args.device)
-    #     meas = meas.float().to(args.device)
-    #     torch.save([meas,gt],save_path_train+f"data_{iteration}.pth")
-    # end_time = time.time()
+    iter_num = len(train_data_loader) 
+    start_time = time.time()
+    for iteration, data in tqdm(enumerate(train_data_loader),
+                                 desc ="Processing training data... ",colour="red",
+                                 total=iter_num,
+                                 ascii=' 123456789═'):
+        gt, meas = data
+        gt = gt[0].float().to(args.device)
+        meas = meas.float().to(args.device)
+        torch.save([meas,gt],save_path_train+f"data_{iteration}.pth")
+    end_time = time.time()
 
 
 ################
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     start_time = time.time()
     for iteration, data in tqdm(enumerate(test_data_loader),
                                  desc ="Processing testing data... ",colour="green",
-                                 total=30,
+                                 total=iter_num,
                                  ascii=' 123456789═'):
         
         gt, meas = data

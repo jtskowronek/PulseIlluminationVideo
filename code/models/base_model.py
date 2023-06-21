@@ -527,10 +527,10 @@ class cnnModel(nn.Module):
 
         self.color_channels = color_channels
         #In
-        self.unetL1   = UNet(in_channels=32, out_channels=16)
-        self.unetL2   = UNet(in_channels=32, out_channels=16)
-        self.unetL3   = UNet(in_channels=32, out_channels=16)
-        self.invNet = StandardConv2D(in_channels = 3,out_channels=16, window=5).cuda()
+        self.unetL1   = UNet(in_channels=frames*2, out_channels=frames)
+        self.unetL2   = UNet(in_channels=frames*2, out_channels=frames)
+        self.unetL3   = UNet(in_channels=frames*2, out_channels=frames)
+        self.invNet = StandardConv2D(in_channels = 3,out_channels=frames, window=5).cuda()
         self.token_gen = nn.Sequential(
             nn.Conv3d(1, dim, kernel_size=5, stride=1,padding=2),
             nn.LeakyReLU(inplace=True),
@@ -604,7 +604,7 @@ class cnnModel(nn.Module):
     def forward(self, y, args):
 
 
-        de_meas = inference(self.FILM,y[:,0:1,:,:].repeat(1,3,1,1),y[:,-1:,:,:].repeat(1,3,1,1),14)
+        de_meas = inference(self.FILM,y[:,0:1,:,:].repeat(1,3,1,1),y[:,-1:,:,:].repeat(1,3,1,1),args.frames-2)
         de_meas = [torch.sum(de_meas[k],dim=1,keepdim=True).cuda() for k in range(args.frames)]
         xh = torch.stack(de_meas, dim=1)[:,:,0,:,:]
 
