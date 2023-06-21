@@ -27,7 +27,7 @@ parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask18_chess
 parser.add_argument("--model_module",type=str,default='base_model')
 parser.add_argument("--loss_module",type=str,default='loss_test2')
 parser.add_argument('--gpu', default="0", type=str)
-parser.add_argument("--resolution",type=eval,default=[144,144])
+parser.add_argument("--resolution",type=eval,default=[128,128])
 parser.add_argument("--frames",type=int,default=18)
 parser.add_argument("--resume",type=str,default=None)
 parser.add_argument("--checkpoints",type=str,default=None)

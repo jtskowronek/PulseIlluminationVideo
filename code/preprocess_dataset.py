@@ -21,9 +21,9 @@ parser.add_argument("--preprocess_path_train",type=str,default='./dataset/Prepro
 parser.add_argument("--preprocess_path_test", type=str,default='./dataset/Preprocess_test_dataset/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask18_chess_led.mat')
 parser.add_argument('--gpu', default="0", type=str)
-parser.add_argument("--resolution",type=eval,default=[150,150])
+parser.add_argument("--resolution",type=eval,default=[128,128])
 parser.add_argument("--frames",type=int,default=18)
-parser.add_argument("--dataset_crop",type=eval,default=[150,150])
+parser.add_argument("--dataset_crop",type=eval,default=[128,128])
 parser.add_argument("--batch_size",type=int,default=1)
 args = parser.parse_args()
 args.device = "cuda"
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     start_time = time.time()
     for iteration, data in tqdm(enumerate(test_data_loader),
                                  desc ="Processing testing data... ",colour="green",
-                                 total=iter_num,
+                                 total=30,
                                  ascii=' 123456789═'):
         
         gt, meas = data
