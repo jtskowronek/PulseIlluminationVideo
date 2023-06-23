@@ -46,6 +46,12 @@ if __name__ == '__main__':
     CNNmethod = importlib.import_module('models.'+ args.model_module)
     model = CNNmethod.cnnModel(frames=args.frames).to(args.device)
     model = model.eval()
+    resume_dict = torch.load(args.checkpoints)
+    if "model_state_dict" not in resume_dict.keys():
+        model_state_dict = resume_dict
+    else:
+        model_state_dict = resume_dict["model_state_dict"]
+    load_checkpoints(model,model_state_dict)
 
     test_dataset = Imgdataset(args.test_dataset_path)
 
