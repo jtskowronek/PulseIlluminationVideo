@@ -13,16 +13,17 @@ import torch
 import time
 import argparse 
 from tqdm import tqdm
+import matplotlib.pyplot as plt 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--train_dataset_path",type=str,default='./dataset/DAVIS/JPEGImages/480p/')
 parser.add_argument("--preprocess_path_train",type=str,default='./dataset/Preprocess_DAVIS/')
 parser.add_argument("--preprocess_path_test", type=str,default='./dataset/Preprocess_test_dataset/')
-parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask18_chess_led.mat')
+parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
 parser.add_argument('--gpu', default="0", type=str)
 parser.add_argument("--resolution",type=eval,default=[128,128])
-parser.add_argument("--frames",type=int,default=18)
+parser.add_argument("--frames",type=int,default=16)
 parser.add_argument("--dataset_crop",type=eval,default=[128,128])
 parser.add_argument("--batch_size",type=int,default=1)
 args = parser.parse_args()
@@ -84,8 +85,8 @@ if __name__ == '__main__':
                                  total=iter_num,
                                  ascii=' 123456789═'):
         gt, meas = data
-        gt = gt[0].float().to(args.device)
-        meas = meas.float().to(args.device)
+        gt = gt[0].float()
+        meas = meas.float()
         torch.save([meas,gt],save_path_train+f"data_{iteration}.pth")
     end_time = time.time()
 
