@@ -1,6 +1,7 @@
 import os.path as osp
 from config.config_file import Config
 import os
+import torch
 
 
 def update_cfg(args):
@@ -45,3 +46,53 @@ def update_cfg(args):
     if not osp.exists(cfg.checkpoints_dir):
         os.makedirs(cfg.checkpoints_dir)    
     return cfg
+
+
+def subsample_tensor(tensor, block_size):
+    # tensor: Input tensor (shape: [batch_size, channels, height, width])
+    # block_size: Integer (either 2 or 4), specifies the subsample size.
+
+    if block_size not in [2, 4, 8]:
+        raise ValueError("block_size should be either 2 or 4 or 8.")
+
+    # Get the dimensions of the tensor
+    batch_size, channels, height, width = tensor.size()
+
+    # Calculate the new dimensions after subsampling
+    new_height = height // block_size
+    new_width = width // block_size
+
+    # Reshape the tensor into blocks for subsampling
+    subsampled_tensor = tensor.view(batch_size, channels, new_height, block_size, new_width, block_size)
+
+    # Reshape and transpose to create patches
+    subsampled_tensor = subsampled_tensor.permute(0, 1, 3, 5, 2, 4).contiguous()
+    subsampled_tensor = subsampled_tensor.view(batch_size * (block_size ** 2), channels, new_height, new_width)
+
+    return subsampled_tensor
+
+
+
+def reconstruct_tensor(subsampled_tensor, original_shape, block_size):
+    # subsampled_tensor: Input tensor after subsampling
+    # original_shape: Tuple (batch_size, channels, original_height, original_width)
+    # block_size: Integer (either 2 or 4), specifies the subsample size.
+
+    if block_size not in [2, 4, 8]:
+        raise ValueError("block_size should be either 2 or 4 or 8.")
+
+    # Get the original dimensions
+    batch_size, channels, original_height, original_width = original_shape
+
+    # Calculate the new dimensions after subsampling
+    new_height = original_height // block_size
+    new_width = original_width // block_size
+
+    # Reshape the tensor into blocks for reconstruction
+    reconstructed_tensor = subsampled_tensor.view(batch_size, block_size, block_size, channels, new_height, new_width)
+
+    # Reshape and transpose to create patches
+    reconstructed_tensor = reconstructed_tensor.permute(0, 3, 4, 1, 5, 2).contiguous()
+    reconstructed_tensor = reconstructed_tensor.view(batch_size, channels, original_height, original_width)
+
+    return reconstructed_tensor

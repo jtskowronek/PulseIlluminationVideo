@@ -23,15 +23,16 @@ class Imgdataset(Dataset):
     def __getitem__(self, index):
 
          data = self.data[index]["orig"]
+         name = data[-9:]
          data = scio.loadmat(data)        
-         meas0 = data['meas0']
-         meas0 = torch.squeeze(torch.from_numpy(meas0))
          meas1 = data['meas1']
-         meas1 = torch.squeeze(torch.from_numpy(meas1))         
+         meas1 = torch.unsqueeze(torch.from_numpy(meas1),0)
+         meas2 = data['meas2']
+         meas2 = torch.unsqueeze(torch.from_numpy(meas2),0)        
          measc = data['measc']
-         measc = torch.squeeze(torch.from_numpy(measc))
+         measc = torch.unsqueeze(torch.from_numpy(measc),0)
 
-         return meas0,meas1,measc
+         return meas1,meas2,measc,name
 
     def __len__(self):
 
