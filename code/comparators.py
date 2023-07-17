@@ -83,11 +83,6 @@ if __name__ == '__main__':
             model_out = model(meas_f,args) 
             ref_out   = modelFILM(ref_f,args)
 
-        model_out_f = torch.cat((meas1,model_out[:,1:-1,:,:],meas2),1)
-
-        out_save = torch.squeeze(model_out_f).permute(1,2,0).cpu().numpy()
-
-        scio.savemat(args.results_path + name[0], {'recon': out_save})
         
 
 
