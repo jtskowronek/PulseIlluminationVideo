@@ -10,7 +10,7 @@ from config.utils.logger import Logger
 from config.utils.utils import save_image, load_checkpoints, get_device_info
 from config.utils.eval_full import eval_psnr_ssim
 from config.util_functions import *
-from config.experimental_loader import *
+from config.customDataloader import *
 import torch
 from tqdm import tqdm
 import argparse 
@@ -21,7 +21,7 @@ import scipy as sci
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--work_dir",type=str,default='/full_modelv4/')
-parser.add_argument("--test_dataset_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/128/')
+parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_test_dataset/')
 parser.add_argument("--results_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/128r/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
 parser.add_argument("--model_module",type=str,default='base_model')
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     ## Load cuda devide
     device = args.device
 
-    ## Import model
+    ## Import models
     CNNmethod = importlib.import_module('models.'+ args.model_module)
     model = CNNmethod.cnnModel(frames=args.frames).to(args.device)
     model = model.eval()
@@ -60,29 +60,28 @@ if __name__ == '__main__':
         model_state_dict = resume_dict["model_state_dict"]
     load_checkpoints(model,model_state_dict)
 
-    test_dataset = Imgdataset(args.test_dataset_path,)
-    experimental_dataloader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
+    CNNmethod = importlib.import_module('models.FILM')
+    model = CNNmethod.cnnModel(frames=args.frames).to(args.device)
+    modelFILM = model.eval()
 
-    for iteration, data in tqdm(enumerate(experimental_dataloader),
+
+    test_dataset = Imgdataset(args.test_dataset_path)
+    test_dataloader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
+
+    for iteration, data in tqdm(enumerate(test_dataloader),
                                  desc ="Reconstructing... ",colour="red",
-                                 total=len(experimental_dataloader),
+                                 total=len(test_dataloader),
                                  ascii=' 123456789═'):
-        meas1,meas2,measc,name = data
-        meas1 = meas1.to(args.device).float()
-        meas2 = meas2.to(args.device).float()
-        measc = measc.to(args.device).float()
+        gt, meas = data
+        gt = gt.to(args.device)
+        meas = meas.to(args.device)
 
-        meas_f = torch.cat((meas1,measc,meas2),1)
-        if args.sub_sampling > 1:
-            meas_f = subsample_tensor(meas_f, args.sub_sampling)
-
+        meas_f = torch.cat((gt[:,0:1,:,:],meas,gt[:,-1:,:,:]),1)
+        ref_f  = torch.cat((gt[:,0:1,:,:],gt[:,6:7,:,:],gt[:,-1:,:,:]),1)
 
         with torch.no_grad():
             model_out = model(meas_f,args) 
-
-        if args.sub_sampling > 1:
-            model_out = reconstruct_tensor(model_out, torch.Size([1,args.frames,args.resolution[0],args.resolution[1]]), args.sub_sampling)
-
+            ref_out   = modelFILM(ref_f,args)
 
         model_out_f = torch.cat((meas1,model_out[:,1:-1,:,:],meas2),1)
 
