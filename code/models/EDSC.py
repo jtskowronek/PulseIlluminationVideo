@@ -11,7 +11,7 @@ import torchvision.models as models
 import math
 import sys
 import torch.nn.functional as F
-from networks import dsepconv
+from models import dsepconv
 
 
 

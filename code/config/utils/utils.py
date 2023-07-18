@@ -76,3 +76,15 @@ def At(y,Phi):
     x = y*Phi
     return x
 
+
+def normalize_tensor(tensor):
+    # tensor: Input tensor
+
+    # Find the minimum and maximum values of the tensor
+    min_val = torch.min(tensor)
+    max_val = torch.max(tensor)
+
+    # Normalize the tensor to the range [0, 1]
+    normalized_tensor = (tensor - min_val) / (max_val - min_val)
+
+    return normalized_tensor
