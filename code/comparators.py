@@ -17,8 +17,7 @@ from torchmetrics.image import StructuralSimilarityIndexMeasure, PeakSignalNoise
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--work_dir",type=str,default='/full_modelv4/')
-parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_test_dataset/')
-parser.add_argument("--results_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/128r/')
+parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_DAVIS/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
 parser.add_argument("--model_module",type=str,default='base_model')
 parser.add_argument('--gpu', default="0", type=str)
@@ -38,10 +37,6 @@ print('The number of GPU is {} using {}'.format(n_gpu,args.gpu))
 
 
 if __name__ == '__main__':
-
-
-    if not os.path.exists(args.results_path):
-        os.makedirs(args.results_path)
 
     ## Load cuda devide
     device = args.device

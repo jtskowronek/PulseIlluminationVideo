@@ -21,8 +21,8 @@ import scipy as sci
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--work_dir",type=str,default='/full_modelv4/')
-parser.add_argument("--test_dataset_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/128/')
-parser.add_argument("--results_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/128r/')
+parser.add_argument("--test_dataset_path",type=str,default='./dataset/processed/coded/test6/256/')
+parser.add_argument("--results_path",type=str,default='./dataset/processed/coded/test6/256r/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
 parser.add_argument("--model_module",type=str,default='base_model')
 parser.add_argument('--gpu', default="0", type=str)
@@ -73,15 +73,10 @@ if __name__ == '__main__':
         measc = measc.to(args.device).float()
 
         meas_f = torch.cat((meas1,measc,meas2),1)
-        if args.sub_sampling > 1:
-            meas_f = subsample_tensor(meas_f, args.sub_sampling)
 
 
         with torch.no_grad():
             model_out = model(meas_f,args) 
-
-        if args.sub_sampling > 1:
-            model_out = reconstruct_tensor(model_out, torch.Size([1,args.frames,args.resolution[0],args.resolution[1]]), args.sub_sampling)
 
 
         model_out_f = torch.cat((meas1,model_out[:,1:-1,:,:],meas2),1)
