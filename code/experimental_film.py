@@ -21,10 +21,10 @@ import scipy as sci
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--work_dir",type=str,default='/full_modelv4/')
-parser.add_argument("--test_dataset_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/512/')
-parser.add_argument("--results_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/coded/test6/512r/')
+parser.add_argument("--test_dataset_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/ref/test6/512/')
+parser.add_argument("--results_path",type=str,default='C:/Users/felip/Desktop/Experiment_24-05-2023/processed/ref/test6/512r_edsc/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
-parser.add_argument("--model_module",type=str,default='base_model')
+parser.add_argument("--model_module",type=str,default='EDSC_f')
 parser.add_argument('--gpu', default="0", type=str)
 parser.add_argument("--resolution",type=eval,default=[128,128])
 parser.add_argument("--frames",type=int,default=16)
@@ -53,26 +53,20 @@ if __name__ == '__main__':
     CNNmethod = importlib.import_module('models.'+ args.model_module)
     model = CNNmethod.cnnModel(frames=args.frames).to(args.device)
     model = model.eval()
-    resume_dict = torch.load(args.checkpoints)
-    if "model_state_dict" not in resume_dict.keys():
-        model_state_dict = resume_dict
-    else:
-        model_state_dict = resume_dict["model_state_dict"]
-    load_checkpoints(model,model_state_dict)
 
-    test_dataset = Imgdataset(args.test_dataset_path,)
+    test_dataset = ImgdatasetRef(args.test_dataset_path,)
     experimental_dataloader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
 
     for iteration, data in tqdm(enumerate(experimental_dataloader),
                                  desc ="Reconstructing... ",colour="red",
                                  total=len(experimental_dataloader),
                                  ascii=' 123456789═'):
-        meas1,meas2,measc,name = data
+        meas1,meas2,meas3,name = data
         meas1 = meas1.to(args.device).float()
         meas2 = meas2.to(args.device).float()
-        measc = measc.to(args.device).float()
+        meas3 = meas3.to(args.device).float()
 
-        meas_f = torch.cat((meas1,measc,meas2),1)
+        meas_f = torch.cat((meas1,meas2,meas3),1)
 
 
         with torch.no_grad():
@@ -81,7 +75,7 @@ if __name__ == '__main__':
 
         model_out_f = torch.cat((meas1,model_out[:,1:-1,:,:],meas2),1)
 
-        out_save = torch.squeeze(model_out_f).permute(1,2,0).cpu().numpy()
+        out_save = torch.squeeze(model_out).permute(1,2,0).cpu().numpy()
 
         scio.savemat(args.results_path + name[0], {'recon': out_save})
         

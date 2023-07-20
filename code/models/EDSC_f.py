@@ -89,18 +89,18 @@ class cnnModel(nn.Module):
 
     def forward(self, y, args):
 
-        y1 = y[:,0:1,:,:]
-        y2 = y[:,1:2,:,:]
-        y3 = y[:,-1:,:,:]
+        y1 = torch.unsqueeze(y[:,0,:,:],1)
+        y2 = torch.unsqueeze(y[:,1,:,:],1)
+        y3 = torch.unsqueeze(y[:,2,:,:],1)
 
         de_meas1 = inference(self.EDSC,y1.repeat(1,3,1,1),y2.repeat(1,3,1,1),5)
-        de_meas1 = [torch.sum(de_meas1[k],dim=1,keepdim=True).cuda() for k in range(len(de_meas1))]
+        de_meas1 = [torch.sum(de_meas1[k]*0.33,dim=1,keepdim=True).cuda() for k in range(len(de_meas1))]
         de_meas1 = torch.stack(de_meas1,dim=1)
         de_meas1 = de_meas1[:,:,0]
 
 
         de_meas2 = inference(self.EDSC,y2.repeat(1,3,1,1),y3.repeat(1,3,1,1),8)
-        de_meas2 = [torch.sum(de_meas2[k],dim=1,keepdim=True).cuda() for k in range(len(de_meas2))]
+        de_meas2 = [torch.sum(de_meas2[k]*0.33,dim=1,keepdim=True).cuda() for k in range(len(de_meas2))]
         de_meas2 = torch.stack(de_meas2,dim=1)
         de_meas2 = de_meas2[:,1:,0]
 

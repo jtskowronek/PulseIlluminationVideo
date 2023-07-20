@@ -23,7 +23,7 @@ class Imgdataset(Dataset):
     def __getitem__(self, index):
 
          data = self.data[index]["orig"]
-         name = data[-9:]
+         name = data[-10:]
          data = scio.loadmat(data)        
          meas1 = data['meas1']
          meas1 = torch.unsqueeze(torch.from_numpy(meas1),0)
@@ -38,13 +38,10 @@ class Imgdataset(Dataset):
 
         return len(self.data)
     
-
-
-
 class ImgdatasetRef(Dataset):
 
     def __init__(self, path):
-        super(Imgdataset, self).__init__()
+        super(ImgdatasetRef, self).__init__()
         self.data = []
         if os.path.exists(path):
             gt_path = path
@@ -60,7 +57,7 @@ class ImgdatasetRef(Dataset):
     def __getitem__(self, index):
 
          data = self.data[index]["orig"]
-         name = data[-9:]
+         name = data[-10:]
          data = scio.loadmat(data)        
          meas1 = data['meas1']
          meas1 = torch.unsqueeze(torch.from_numpy(meas1),0)
@@ -73,4 +70,5 @@ class ImgdatasetRef(Dataset):
 
     def __len__(self):
 
-        return len(self.data)    
+        return len(self.data)
+
