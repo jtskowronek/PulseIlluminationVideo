@@ -24,7 +24,7 @@ parser.add_argument("--experimentName",type=str,default='baseline')
 parser.add_argument("--train_dataset_path",type=str,default='./dataset/Preprocess_DAVIS/')
 parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_test_dataset/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
-parser.add_argument("--model_module",type=str,default='base_model')
+parser.add_argument("--model_module",type=str,default='base_modelv2')
 parser.add_argument("--loss_module",type=str,default='loss_test2')
 parser.add_argument('--gpu', default="0", type=str)
 parser.add_argument("--resolution",type=eval,default=[128,128])
@@ -33,7 +33,7 @@ parser.add_argument("--resume",type=str,default=None)
 parser.add_argument("--checkpoints",type=str,default=None)
 parser.add_argument("--Epochs",type=int,default=150)
 parser.add_argument("--batch_size",type=int,default=1)
-parser.add_argument("--learning_rate",type=int,default=0.0001)
+parser.add_argument("--learning_rate",type=float,default=0.0001)
 parser.add_argument("--saveImageEach",type=int,default=500)
 parser.add_argument("--saveModelEach",type=int,default=1)
 
@@ -165,6 +165,6 @@ if __name__ == '__main__':
         print("Mean SSIM: \n{}.\n".format(ssim_str))
         writer.add_scalar("psnr_metric",psnr_values[-1],epoch*len(train_data_loader) + iteration)
         writer.add_scalar("ssim_metric",ssim_values[-1],epoch*len(train_data_loader) + iteration)
-        if (epoch % 5 == 0) and (epoch < 100):
+        if (epoch % 5 == 0) and (epoch < 150):
             args.learning_rate = args.learning_rate * 0.95  
 

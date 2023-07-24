@@ -12,12 +12,13 @@ from tqdm import tqdm
 import argparse 
 from torch.utils.data import DataLoader
 from torchmetrics.image import StructuralSimilarityIndexMeasure, PeakSignalNoiseRatio
-
+import time
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config",type=str,default='./config/default_config.py')
 parser.add_argument("--work_dir",type=str,default='/full_modelv4/')
-parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_DAVIS/')
+parser.add_argument("--test_dataset_path",type=str,default='./dataset/Preprocess_test_dataset/')
 parser.add_argument("--mask_path",type=str,default='./masks/shutter_mask16.mat')
 parser.add_argument("--model_module",type=str,default='base_model')
 parser.add_argument('--gpu', default="0", type=str)
@@ -65,9 +66,9 @@ if __name__ == '__main__':
 
     ssim = StructuralSimilarityIndexMeasure(data_range=255)
     psnr = PeakSignalNoiseRatio(data_range=255)
-    PSNRV,SSIMV = [],[]
-    PSNRF,SSIMF = [],[]
-    PSNRE,SSIME = [],[]
+    PSNRV,SSIMV,TIMEV = [],[],[]
+    PSNRF,SSIMF,TIMEF = [],[],[]
+    PSNRE,SSIME,TIMEE = [],[],[]
     for iteration, data in tqdm(enumerate(test_dataloader),
                                  desc ="Reconstructing... ",colour="red",
                                  total=len(test_dataloader),
@@ -80,9 +81,19 @@ if __name__ == '__main__':
         ref_f  = torch.cat((gt[:,0:1,:,:],gt[:,6:7,:,:],gt[:,-1:,:,:]),1)
 
         with torch.no_grad():
+
+            t1 = time.time()
             model_out = model(meas_f,args) 
+            t_model = time.time()-t1
+
+            t2 = time.time()
             ref_out   = modelFILM(ref_f,args)
+            t_film = time.time()-t2
+
+            t3 = time.time()
             EDS_out   = modelEDSC(ref_f,args)
+            t_edsc = time.time()-t3
+
 
         if args.normalize == 1:
         
@@ -100,50 +111,56 @@ if __name__ == '__main__':
         ssim_val = ssim(gtc*255,moc*255) 
 
         PSNRV.append(psnr_val) 
-        SSIMV.append(ssim_val)     
+        SSIMV.append(ssim_val)
+        TIMEV.append(t_model)     
 
         psnr_ref = psnr(normalize_tensor(gtc)*255,normalize_tensor(ref)*255)
         ssim_ref = ssim(normalize_tensor(gtc)*255,normalize_tensor(ref)*255)
 
         PSNRF.append(psnr_ref) 
         SSIMF.append(ssim_ref)  
+        TIMEF.append(t_film) 
 
         psnr_eds = psnr(normalize_tensor(gtc)*255,normalize_tensor(ref2)*255)
         ssim_eds = ssim(normalize_tensor(gtc)*255,normalize_tensor(ref2)*255)
 
         PSNRE.append(psnr_eds) 
-        SSIME.append(ssim_eds)            
+        SSIME.append(ssim_eds) 
+        TIMEE.append(t_edsc)            
 
     PSNRV = torch.stack(PSNRV)
     SSIMV = torch.stack(SSIMV)
+
     PSNRF = torch.stack(PSNRF)
-    SSIMF = torch.stack(SSIMF)  
+    SSIMF = torch.stack(SSIMF)
+
     PSNRE = torch.stack(PSNRE)
     SSIME = torch.stack(SSIME)
 
 
+
     mp_our = torch.mean(PSNRV).cpu().numpy()
     sp_our = torch.std(PSNRV).cpu().numpy()
-
     ms_our = torch.mean(SSIMV).cpu().numpy()
     ss_our = torch.std(SSIMV).cpu().numpy()   
+    ti_our = np.mean(TIMEV)
 
     mp_fil = torch.mean(PSNRF).cpu().numpy()
     sp_fil = torch.std(PSNRF).cpu().numpy()
-
     ms_fil = torch.mean(SSIMF).cpu().numpy()
-    ss_fil = torch.std(SSIMF).cpu().numpy() 
+    ss_fil = torch.std(SSIMF).cpu().numpy()
+    ti_fil = np.mean(TIMEF) 
 
     mp_eds = torch.mean(PSNRE).cpu().numpy()
     sp_eds = torch.std(PSNRE).cpu().numpy()
-
     ms_eds = torch.mean(SSIME).cpu().numpy()
-    ss_eds = torch.std(SSIME).cpu().numpy()     
+    ss_eds = torch.std(SSIME).cpu().numpy() 
+    ti_eds = np.mean(TIMEE)
 
-    print(f"|   Method   |     PSNR      |      SSIM      |")      
-    print(f"|   Ours     | {mp_our:.2f} +- {sp_our:.2f} |  {ms_our:.4f} +- {ss_our:.4f}  |") 
-    print(f"|   FILM     | {mp_fil:.2f} +- {sp_fil:.2f} |  {ms_fil:.4f} +- {ss_fil:.4f}  |")
-    print(f"|   EDSC     | {mp_eds:.2f} +- {sp_eds:.2f} |  {ms_eds:.4f} +- {ss_eds:.4f}  |") 
+    print(f"|   Method   |     PSNR      |      SSIM      | Inferece Time |")      
+    print(f"|   Ours     | {mp_our:.2f} +- {sp_our:.2f} |  {ms_our:.4f} +- {ss_our:.4f}  | {ti_our:.2f} |") 
+    print(f"|   FILM     | {mp_fil:.2f} +- {sp_fil:.2f} |  {ms_fil:.4f} +- {ss_fil:.4f}  | {ti_fil:.2f} |")
+    print(f"|   EDSC     | {mp_eds:.2f} +- {sp_eds:.2f} |  {ms_eds:.4f} +- {ss_eds:.4f}  | {ti_eds:.2f} |") 
 
         
 
