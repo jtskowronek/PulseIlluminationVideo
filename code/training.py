@@ -2,8 +2,6 @@ import os
 import os.path as osp
 import sys 
 import importlib
-BASE_DIR = osp.dirname(osp.dirname(osp.abspath(__file__)))
-sys.path.append(BASE_DIR)
 from torch.utils.data import DataLoader
 from config.utils.mask import generate_masks
 from config.utils.utils import save_image, load_checkpoints, get_device_info
@@ -18,6 +16,8 @@ import time
 import argparse 
 import json 
 
+BASE_DIR = osp.dirname(osp.dirname(osp.abspath(__file__)))
+sys.path.append(BASE_DIR)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--experimentName",type=str,default='debug')
